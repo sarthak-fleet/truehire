@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowUpRight, ExternalLink, RefreshCw } from "lucide-react";
+import { ArrowUpRight, ExternalLink } from "lucide-react";
 import { auth } from "@/lib/auth";
 import {
   getActivityMonths,
@@ -17,6 +17,7 @@ import { ActivityTimeline } from "@/components/molecules/activity-timeline";
 import { RefreshButton } from "./refresh-button";
 import { IngestBootstrapper } from "./ingest-bootstrapper";
 import { WorkHistorySection } from "./work-history";
+import { RoleFitForm } from "./role-fit-form";
 
 export const dynamic = "force-dynamic";
 
@@ -153,6 +154,8 @@ export default async function DashboardPage() {
           </section>
 
           <WorkHistorySection />
+
+          {user.githubUsername && <RoleFitForm username={user.githubUsername} />}
 
           {profileUrl && (
             <Card className="mt-6">
