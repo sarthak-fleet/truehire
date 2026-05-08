@@ -39,6 +39,47 @@ export type RoleFitReport = {
   };
 };
 
+export type ShortlistCandidateInput = {
+  handle: string;
+  name: string | null;
+  profileUrl: string;
+  overallScore: number;
+  signal1: number;
+  signal2: number;
+  totalRepos: number;
+  monthsActive: number;
+  computedAt: Date | string | number;
+  evidence: EvidenceEntry[];
+  languages: ScoreBreakdown["languages"];
+};
+
+export type ShortlistCandidateComparison = {
+  rank: number;
+  handle: string;
+  name: string | null;
+  profileUrl: string;
+  overallScore: number;
+  signal1: number;
+  signal2: number;
+  totalRepos: number;
+  monthsActive: number;
+  computedAt: string;
+  report: RoleFitReport;
+  topStrengths: RoleFitRequirementResult[];
+  topGaps: RoleFitRequirementResult[];
+};
+
+export type ShortlistComparisonReport = {
+  candidates: ShortlistCandidateComparison[];
+  summary: {
+    candidateCount: number;
+    averageFitScore: number;
+    topCandidateHandle: string | null;
+    strongestRequirement: string | null;
+    commonGap: string | null;
+  };
+};
+
 const REQUIREMENT_CATALOG: Array<Omit<RoleRequirement, "id" | "weight">> = [
   {
     label: "TypeScript",
@@ -188,6 +229,59 @@ export function serializePublicRoleFitReport(report: RoleFitReport): RoleFitRepo
   };
 }
 
+export function buildShortlistComparisonReport(params: {
+  jobDescription: string;
+  candidates: ShortlistCandidateInput[];
+}): ShortlistComparisonReport {
+  const candidates = params.candidates
+    .map((candidate) => {
+      const report = serializePublicRoleFitReport(
+        buildRoleFitReport({
+          jobDescription: params.jobDescription,
+          evidence: candidate.evidence,
+          score: { languages: candidate.languages },
+        }),
+      );
+
+      return {
+        rank: 0,
+        handle: candidate.handle,
+        name: candidate.name,
+        profileUrl: candidate.profileUrl,
+        overallScore: candidate.overallScore,
+        signal1: candidate.signal1,
+        signal2: candidate.signal2,
+        totalRepos: candidate.totalRepos,
+        monthsActive: candidate.monthsActive,
+        computedAt: new Date(candidate.computedAt).toISOString(),
+        report,
+        topStrengths: report.verifiedStrengths
+          .slice()
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3),
+        topGaps: report.gaps
+          .slice()
+          .sort((a, b) => a.score - b.score)
+          .slice(0, 2),
+      };
+    })
+    .sort(compareShortlistCandidates)
+    .map((candidate, index) => ({ ...candidate, rank: index + 1 }));
+
+  return {
+    candidates,
+    summary: {
+      candidateCount: candidates.length,
+      averageFitScore: average(candidates.map((candidate) => candidate.report.fitScore)),
+      topCandidateHandle: candidates[0]?.handle ?? null,
+      strongestRequirement: mostCommonRequirement(
+        candidates.flatMap((candidate) => candidate.topStrengths),
+      ),
+      commonGap: mostCommonRequirement(candidates.flatMap((candidate) => candidate.topGaps)),
+    },
+  };
+}
+
 function matchRequirement(
   requirement: RoleRequirement,
   evidence: EvidenceEntry[],
@@ -252,6 +346,33 @@ function serializeResult(result: RoleFitRequirementResult): RoleFitRequirementRe
       scoreEvidenceWeight: Math.round(strength.scoreEvidenceWeight),
     })),
   };
+}
+
+function compareShortlistCandidates(
+  a: Omit<ShortlistCandidateComparison, "rank">,
+  b: Omit<ShortlistCandidateComparison, "rank">,
+) {
+  return (
+    b.report.fitScore - a.report.fitScore ||
+    b.report.summary.verifiedRequirements - a.report.summary.verifiedRequirements ||
+    a.report.summary.gapCount - b.report.summary.gapCount ||
+    b.overallScore - a.overallScore ||
+    a.handle.localeCompare(b.handle)
+  );
+}
+
+function average(values: number[]) {
+  if (values.length === 0) return 0;
+  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+function mostCommonRequirement(results: RoleFitRequirementResult[]) {
+  if (results.length === 0) return null;
+  const counts = new Map<string, number>();
+  for (const result of results) {
+    counts.set(result.requirement.label, (counts.get(result.requirement.label) ?? 0) + 1);
+  }
+  return Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ?? null;
 }
 
 function extractExtraKeywords(normalized: string) {

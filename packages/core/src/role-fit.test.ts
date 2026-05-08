@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildRoleFitReport,
+  buildShortlistComparisonReport,
   extractRoleRequirements,
   serializePublicRoleFitReport,
 } from "./role-fit";
@@ -99,5 +100,63 @@ describe("role fit reports", () => {
         scoreEvidenceWeight: expect.any(Number),
       }),
     );
+  });
+
+  it("ranks shortlist candidates by role fit before generic score", () => {
+    const report = buildShortlistComparisonReport({
+      jobDescription: "TypeScript React engineer with testing, CI, docs, and Cloudflare API work.",
+      candidates: [
+        {
+          handle: "generalist",
+          name: "Generalist",
+          profileUrl: "/generalist",
+          overallScore: 95,
+          signal1: 95,
+          signal2: 0,
+          totalRepos: 30,
+          monthsActive: 60,
+          computedAt: "2026-05-08T12:00:00.000Z",
+          evidence: [
+            {
+              repoFullName: "generalist/rust-tools",
+              stars: 400,
+              commits: 500,
+              mergedPrs: 10,
+              isAuthor: true,
+              primaryLanguage: "Rust",
+              weight: 96,
+              craftTags: ["systems"],
+            },
+          ],
+          languages: [{ language: "Rust", share: 0.9, commits: 900 }],
+        },
+        {
+          handle: "frontend-fit",
+          name: "Frontend Fit",
+          profileUrl: "/frontend-fit",
+          overallScore: 80,
+          signal1: 80,
+          signal2: 0,
+          totalRepos: 12,
+          monthsActive: 30,
+          computedAt: "2026-05-08T13:00:00.000Z",
+          evidence,
+          languages: [
+            { language: "TypeScript", share: 0.72, commits: 800 },
+            { language: "JavaScript", share: 0.18, commits: 200 },
+          ],
+        },
+      ],
+    });
+
+    expect(report.candidates[0]?.handle).toBe("frontend-fit");
+    expect(report.candidates[0]?.rank).toBe(1);
+    expect(report.candidates[0]?.computedAt).toBe("2026-05-08T13:00:00.000Z");
+    expect(report.summary).toMatchObject({
+      candidateCount: 2,
+      topCandidateHandle: "frontend-fit",
+    });
+    expect(report.summary.averageFitScore).toBeGreaterThan(0);
+    expect(report.summary.strongestRequirement).toBeTruthy();
   });
 });

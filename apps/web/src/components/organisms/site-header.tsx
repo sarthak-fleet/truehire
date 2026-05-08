@@ -16,6 +16,7 @@ export async function SiteHeader() {
         <nav className="hidden items-center gap-6 text-sm text-[var(--muted)] md:flex">
           <Link href="/#how" className="hover:text-[var(--foreground)]">How it works</Link>
           <Link href="/#signals" className="hover:text-[var(--foreground)]">Signals</Link>
+          <Link href="/recruiter/shortlist" className="hover:text-[var(--foreground)]">Recruiters</Link>
           <Link href="/#faq" className="hover:text-[var(--foreground)]">FAQ</Link>
         </nav>
         <div className="flex items-center gap-2">
