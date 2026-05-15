@@ -29,6 +29,28 @@ const nextConfig: NextConfig = {
     '@libsql/isomorphic-ws',
     'drizzle-orm',
   ],
+  async headers() {
+    return [
+      {
+        source: "/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        source: "/:handle((?!api|dashboard|login|recruiter|verify|_next).*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=300, stale-while-revalidate=3600",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

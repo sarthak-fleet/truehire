@@ -1,10 +1,12 @@
+"use client";
+
 import Link from "next/link";
-import { auth } from "@/lib/auth";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/atoms/button";
 import { GithubIcon as Github } from "@/components/atoms/github-icon";
 
-export async function SiteHeader() {
-  const session = await auth();
+export function SiteHeader() {
+  const { data: session } = useSession();
   const username = session?.user?.githubUsername;
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--background)_85%,transparent)] backdrop-blur-xl">

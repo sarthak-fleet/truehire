@@ -25,6 +25,8 @@ import { CopyProfileLink } from "./copy-profile-link";
 
 type Params = { handle: string };
 
+export const revalidate = 300;
+
 async function loadProfile(handleRaw: string) {
   const handle = handleRaw.startsWith("@") ? handleRaw.slice(1) : handleRaw;
   const user = await getUserByUsername(handle);
@@ -321,4 +323,3 @@ function formatNumber(n: number) {
   if (n >= 1_000) return `${(n / 1_000).toFixed(n >= 10_000 ? 0 : 1)}k`;
   return String(n);
 }
-

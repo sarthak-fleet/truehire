@@ -9,6 +9,8 @@ import { Badge } from "@/components/atoms/badge";
 import { Card, CardBody } from "@/components/atoms/card";
 import { ScoreRing } from "@/components/molecules/score-ring";
 
+export const revalidate = 3600;
+
 export default function LandingPage() {
   return (
     <>
