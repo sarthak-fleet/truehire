@@ -18,7 +18,7 @@ Scores are **derived, never declared**: every number on a profile traces back to
 ```
 apps/web/                 Next.js app — pages, API routes, auth
 packages/core/            Pure scoring + GitHub ingest (no IO in scoring fns)
-  src/scoring/score.ts    Weighted composite (depth/breadth/recognition/specialization)
+  src/scoring/score.ts    Weighted composite (depth/breadth/recognition/craft/specialization)
   src/ingest/             GitHub GraphQL + REST via @octokit
 packages/db/              Drizzle schema, migrations, client
 packages/ui/              Shared UI primitives (not yet published)
@@ -27,14 +27,15 @@ plans/                    Archived implementation plans
 
 ## Scoring algorithm
 
-Pure functions in `packages/core/src/scoring/score.ts`. Any weight change requires a corresponding test update.
+Pure functions in `packages/core/src/scoring/score.ts`. Any weight change requires a corresponding test update. The full prose explanation with live values lives at [`/methodology`](apps/web/src/app/methodology/page.tsx).
 
 | Axis | Weight | Source |
 |---|---|---|
-| Depth | 30% | log-scaled months active, 24-month recency half-life, 60-month cap |
-| Breadth | 20% | log-scaled distinct repos with commits ≥ 3 or merged PRs ≥ 1, capped at 50 |
-| Recognition | 35% | `log10(stars on authored repos + merged-PR credit to ≥100★ repos)` |
-| Specialization | 15% | Piecewise on dominant-language share (0 below 20%, linear to 100 at 100%) |
+| Recognition | 30% | `log10(stars on authored repos)` + log10 of merged-PR credit to repos ≥100★. Stars decay with a 48-month freshness half-life. |
+| Depth | 20% | Log-scaled months with ≥ 1 accepted contribution, 30-month recency half-life, 48-month cap. |
+| Craft | 20% | Aggregated from PR review velocity, merged-vs-opened ratio, and signal-to-noise across the contributor's repos. |
+| Breadth | 15% | Log-scaled distinct repos with ≥ 3 commits or ≥ 1 merged PR, capped at 40. |
+| Specialization | 15% | Piecewise on dominant-language share — 0 below 20%, linear to 100 at 100%. |
 
 ## Dev
 

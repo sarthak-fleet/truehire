@@ -311,3 +311,17 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
 }
 
 export { W as SCORING_WEIGHTS, repoCraftScore };
+
+// Public aggregates of the algorithm constants so external surfaces
+// (e.g. the /methodology page) can render the live values without
+// duplicating them.
+export const SCORING_CAPS = {
+  depthMonths: DEPTH_CAP_MONTHS,
+  breadthRepos: BREADTH_CAP_REPOS,
+  recognition: RECOGNITION_CAP,
+} as const;
+
+export const SCORING_HALF_LIVES = {
+  depthMonths: DEPTH_HALF_LIFE_MONTHS,
+  recognitionFreshnessMonths: FRESHNESS_HALF_LIFE_MONTHS,
+} as const;
