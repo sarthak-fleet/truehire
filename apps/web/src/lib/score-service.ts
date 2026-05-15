@@ -15,6 +15,16 @@ export async function getLatestScore(userId: string) {
   return rows[0] ?? null;
 }
 
+/** Recent score snapshots, newest first. */
+export async function getScoreHistory(userId: string, limit = 60) {
+  return db
+    .select()
+    .from(schema.scores)
+    .where(eq(schema.scores.userId, userId))
+    .orderBy(desc(schema.scores.computedAt))
+    .limit(limit);
+}
+
 export async function getUserByUsername(username: string) {
   const rows = await db
     .select()
