@@ -15,7 +15,7 @@
     "db:generate": "pnpm --filter @truehire/db generate",
     "db:migrate": "pnpm --filter @truehire/db migrate",
     "db:studio": "pnpm --filter @truehire/db studio",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "eslint": "10.2.1",
