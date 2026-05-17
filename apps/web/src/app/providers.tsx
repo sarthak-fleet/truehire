@@ -12,7 +12,10 @@ export function Providers({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <PostHogProvider>
+    <PostHogProvider
+      apiKey="phc_qgiAarw4Co4pw9fz3Fxj4UJaHmqzFetqs4JrXhGc35Nd"
+      host="https://us.i.posthog.com"
+    >
       <SessionProvider>{children}</SessionProvider>
     </PostHogProvider>
   );
