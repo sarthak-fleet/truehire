@@ -224,6 +224,81 @@ export const scores = sqliteTable(
 );
 
 // ─────────────────────────────────────────────
+// Hiring domain tables
+// ─────────────────────────────────────────────
+
+export const hiringRoles = sqliteTable("hiring_roles", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  // JSON array of RoleRequirement
+  requirementsJson: text("requirements_json").notNull().default("[]"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+export const hiringPipelines = sqliteTable("hiring_pipelines", {
+  id: text("id").primaryKey(),
+  roleId: text("role_id")
+    .notNull()
+    .references(() => hiringRoles.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  status: text("status", { enum: ["active", "closed", "archived"] })
+    .notNull()
+    .default("active"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+export const pipelineCandidates = sqliteTable("pipeline_candidates", {
+  id: text("id").primaryKey(),
+  pipelineId: text("pipeline_id")
+    .notNull()
+    .references(() => hiringPipelines.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  stage: text("stage", {
+    enum: [
+      "shortlist",
+      "screening",
+      "technical",
+      "interview",
+      "decision",
+      "hired",
+      "rejected",
+    ],
+  })
+    .notNull()
+    .default("shortlist"),
+  notes: text("notes"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+export const candidateEvaluations = sqliteTable("candidate_evaluations", {
+  id: text("id").primaryKey(),
+  pipelineCandidateId: text("pipeline_candidate_id")
+    .notNull()
+    .references(() => pipelineCandidates.id, { onDelete: "cascade" }),
+  stage: text("stage").notNull(),
+  // JSON object mapping requirementId to { score: number, feedback: string }
+  scoresJson: text("scores_json").notNull().default("{}"),
+  overallRecommendation: text("overall_recommendation", {
+    enum: ["strong_hire", "hire", "neutral", "reject", "strong_reject"],
+  }),
+  evaluatorId: text("evaluator_id")
+    .notNull()
+    .references(() => users.id),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+// ─────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────
 
@@ -233,3 +308,7 @@ export type EmployerVerification = typeof employerVerifications.$inferSelect;
 export type Contribution = typeof contributions.$inferSelect;
 export type Score = typeof scores.$inferSelect;
 export type ActivityMonth = typeof activityMonths.$inferSelect;
+export type HiringRole = typeof hiringRoles.$inferSelect;
+export type HiringPipeline = typeof hiringPipelines.$inferSelect;
+export type PipelineCandidate = typeof pipelineCandidates.$inferSelect;
+export type CandidateEvaluation = typeof candidateEvaluations.$inferSelect;

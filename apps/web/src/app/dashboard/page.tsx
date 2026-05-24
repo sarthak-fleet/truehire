@@ -48,6 +48,13 @@ export default async function DashboardPage() {
             Your TrueHire profile is {score ? "live" : "being built"}. Share the
             link in applications, or embed it on your site.
           </p>
+          <div className="mt-4 flex gap-3">
+            <Link href="/recruiter/pipelines">
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px] font-bold uppercase tracking-wider text-[var(--accent)] border border-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)]">
+                Recruiter Tools
+              </Button>
+            </Link>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {profileUrl && (
