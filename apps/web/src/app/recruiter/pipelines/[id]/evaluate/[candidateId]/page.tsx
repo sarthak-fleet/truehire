@@ -4,6 +4,8 @@ import Image from "next/image";
 import {
   ArrowLeft,
   ArrowUpRight,
+  Check,
+  Circle,
   Code2,
   ExternalLink,
   GitPullRequest,
@@ -142,6 +144,31 @@ export default async function EvaluationPage(props: {
   const handle = candidate.user.githubUsername;
   const noteHistory = candidate.candidate.notes ?? "";
 
+  // Build a stage timeline from candidate add + each evaluation snapshot.
+  const timelineEvents: Array<{
+    stage: Stage;
+    at: Date;
+    label: string;
+    recommendation?: string;
+  }> = [
+    {
+      stage: "shortlist",
+      at: new Date(candidate.candidate.createdAt),
+      label: "Added to pipeline",
+    },
+    ...existingEvaluations
+      .slice()
+      .reverse()
+      .map((e) => ({
+        stage: e.stage as Stage,
+        at: new Date(e.createdAt),
+        label: "Reviewed",
+        recommendation: e.overallRecommendation ?? undefined,
+      })),
+  ];
+  const stagesSeen = new Set<Stage>(timelineEvents.map((e) => e.stage));
+  stagesSeen.add(currentStage);
+
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <div className="flex items-center gap-4">
@@ -257,7 +284,16 @@ export default async function EvaluationPage(props: {
             </Card>
           )}
 
-          {evidence.length > 0 && (
+          {score && evidence.length === 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Top evidence</CardTitle>
+              </CardHeader>
+              <CardBody className="text-[12px] text-[var(--muted)]">
+                No repository evidence yet — the profile may still be ingesting.
+              </CardBody>
+            </Card>
+          ) : evidence.length > 0 ? (
             <Card>
               <CardHeader>
                 <CardTitle>Top evidence</CardTitle>
@@ -306,7 +342,7 @@ export default async function EvaluationPage(props: {
                 ))}
               </ul>
             </Card>
-          )}
+          ) : null}
 
           {handle && role.description && (
             <Link
@@ -320,6 +356,65 @@ export default async function EvaluationPage(props: {
 
         {/* Decision column */}
         <div className="grid gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Status history</CardTitle>
+              <Badge tone="outline">{timelineEvents.length} event{timelineEvents.length === 1 ? "" : "s"}</Badge>
+            </CardHeader>
+            <CardBody className="grid gap-4">
+              <ol className="flex flex-wrap items-center gap-x-1 gap-y-2 text-[11px]">
+                {STAGE_ORDER.filter((s) => s !== "rejected" || currentStage === "rejected").map((stage, i, arr) => {
+                  const reached = stagesSeen.has(stage);
+                  const isCurrent = stage === currentStage;
+                  return (
+                    <li key={stage} className="flex items-center gap-1">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 uppercase tracking-wider ${
+                          isCurrent
+                            ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-contrast)] font-semibold"
+                            : reached
+                              ? "border-[var(--border-strong)] text-[var(--foreground)]"
+                              : "border-dashed border-[var(--border)] text-[var(--muted-2)]"
+                        }`}
+                      >
+                        {reached ? <Check className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
+                        {stage}
+                      </span>
+                      {i < arr.length - 1 && (
+                        <span className="text-[var(--muted-2)]">→</span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+              <ul className="grid gap-2 text-[12px]">
+                {timelineEvents.map((ev, i) => (
+                  <li
+                    key={`${ev.stage}-${ev.at.getTime()}-${i}`}
+                    className="flex items-start gap-3 border-l-2 border-[var(--border)] pl-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <Badge tone="outline" className="uppercase tracking-wider">
+                          {ev.stage}
+                        </Badge>
+                        <span className="font-medium">{ev.label}</span>
+                        {ev.recommendation && (
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)]">
+                            {ev.recommendation.replace("_", " ")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <time className="num shrink-0 text-[11px] text-[var(--muted)]">
+                      {ev.at.toLocaleDateString()}
+                    </time>
+                  </li>
+                ))}
+              </ul>
+            </CardBody>
+          </Card>
+
           {noteHistory && (
             <Card>
               <CardHeader>
@@ -345,48 +440,76 @@ export default async function EvaluationPage(props: {
                   structure scoring — for now, capture your read in the notes below.
                 </p>
               ) : (
-                requirements.map((req) => (
-                  <div
-                    key={req.id}
-                    className="flex flex-col gap-3 border-b border-[var(--border)] pb-5 last:border-0 last:pb-0"
-                  >
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold">{req.label}</h3>
-                        <p className="mt-1 text-[11px] text-[var(--muted)]">
-                          {req.category}
-                          {req.keywords.length > 0 &&
-                            ` · ${req.keywords.join(", ")}`}
+                requirements.map((req) => {
+                  const matches = findMatchingEvidence(req, evidence).slice(0, 3);
+                  return (
+                    <div
+                      key={req.id}
+                      className="flex flex-col gap-3 border-b border-[var(--border)] pb-5 last:border-0 last:pb-0"
+                    >
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold">{req.label}</h3>
+                          <p className="mt-1 text-[11px] text-[var(--muted)]">
+                            {req.category}
+                            {req.keywords.length > 0 &&
+                              ` · ${req.keywords.join(", ")}`}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((val) => (
+                            <label
+                              key={val}
+                              className="flex cursor-pointer flex-col items-center"
+                            >
+                              <input
+                                type="radio"
+                                name={`score_${req.id}`}
+                                value={val}
+                                required
+                                className="peer sr-only"
+                              />
+                              <div className="flex h-8 w-8 items-center justify-center rounded border border-[var(--border)] text-sm transition-colors hover:border-[var(--accent)] peer-checked:border-[var(--accent)] peer-checked:bg-[var(--accent)] peer-checked:text-[var(--accent-contrast)]">
+                                {val}
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      {matches.length > 0 ? (
+                        <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                          <span className="text-[var(--muted-2)] uppercase tracking-wider">
+                            Evidence:
+                          </span>
+                          {matches.map((m) => (
+                            <a
+                              key={m.repoFullName}
+                              href={`https://github.com/${m.repoFullName}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 rounded-full border border-[var(--border-strong)] bg-[var(--surface-2)] px-2 py-0.5 hover:bg-[var(--surface-3,var(--surface-2))] hover:text-[var(--accent)]"
+                              title={`${m.commits} commits · ${m.mergedPrs} PRs · ${m.stars} stars`}
+                            >
+                              <span className="truncate max-w-[160px]">{m.repoFullName}</span>
+                              <ExternalLink className="h-3 w-3 opacity-60" />
+                            </a>
+                          ))}
+                        </div>
+                      ) : evidence.length > 0 ? (
+                        <p className="text-[11px] text-[var(--muted-2)]">
+                          No verified repos match these keywords — note any
+                          off-platform evidence below.
                         </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((val) => (
-                          <label
-                            key={val}
-                            className="flex cursor-pointer flex-col items-center"
-                          >
-                            <input
-                              type="radio"
-                              name={`score_${req.id}`}
-                              value={val}
-                              required
-                              className="peer sr-only"
-                            />
-                            <div className="flex h-8 w-8 items-center justify-center rounded border border-[var(--border)] text-sm transition-colors hover:border-[var(--accent)] peer-checked:border-[var(--accent)] peer-checked:bg-[var(--accent)] peer-checked:text-[var(--accent-contrast)]">
-                              {val}
-                            </div>
-                          </label>
-                        ))}
-                      </div>
+                      ) : null}
+                      <textarea
+                        name={`feedback_${req.id}`}
+                        rows={2}
+                        placeholder="What in their work supports this score?"
+                        className="w-full rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+                      />
                     </div>
-                    <textarea
-                      name={`feedback_${req.id}`}
-                      rows={2}
-                      placeholder="What in their work supports this score?"
-                      className="w-full rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
-                    />
-                  </div>
-                ))
+                  );
+                })
               )}
             </CardBody>
           </Card>
@@ -578,6 +701,24 @@ function formatNumber(n: number) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(n >= 10_000 ? 0 : 1)}k`;
   return String(n);
+}
+
+function findMatchingEvidence(
+  req: RoleRequirement,
+  evidence: EvidenceEntry[],
+): EvidenceEntry[] {
+  if (req.keywords.length === 0) return [];
+  const needles = req.keywords.map((k) => k.toLowerCase());
+  return evidence.filter((e) => {
+    const haystack = [
+      e.repoFullName,
+      e.primaryLanguage ?? "",
+      ...(e.craftTags ?? []),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return needles.some((n) => haystack.includes(n));
+  });
 }
 
 function safeParseArray<T>(json: string): T[] {
