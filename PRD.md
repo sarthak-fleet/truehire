@@ -196,8 +196,8 @@ Same as RolePatch (user's standing preference):
 - **Framework:** Next.js 16 + React 19 + TypeScript
 - **Styling:** Tailwind 4
 - **Database:** Turso (libsql) — SQLite edge
-- **Auth:** NextAuth v4 with GitHub + Google providers (GitHub required for MVP since that IS the signal)
-- **Deployment:** Vercel
+- **Auth:** NextAuth v5 beta with GitHub OAuth only (GitHub is the signal source)
+- **Deployment:** Cloudflare Workers via OpenNext
 - **Testing:** Vitest + Playwright
 - **Package manager:** pnpm
 
@@ -207,8 +207,8 @@ Same as RolePatch (user's standing preference):
 |---|---|---|
 | GitHub REST + GraphQL API | Fetch contributions, repos, stars | ✅ |
 | Octokit | SDK for GitHub API | ✅ |
-| Upstash Redis | Job queue for contribution-scoring workers, cache | ✅ |
-| OG Image API (Vercel) | Share-card image generation for profile URLs | ✅ |
+| App-hosted refresh endpoints | Contribution scoring and refresh orchestration | ✅ |
+| Next.js OG image routes | Share-card image generation for profile URLs | ✅ |
 | Resend | Transactional email (employer verification in P2) | Phase 2 |
 | Plaid / Argyle | Payroll / income verification | Phase 2 |
 | Stripe Connect / Wise | Escrow + payouts for reputation bonds and audition | Phase 3 |

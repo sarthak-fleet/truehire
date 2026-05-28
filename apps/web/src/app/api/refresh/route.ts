@@ -62,8 +62,8 @@ function ingestFailureResponse(e: unknown) {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-// Ingest can take up to ~90s on heavy GitHub profiles. Default 10s Vercel
-// timeout kills the promise before it finishes → dashboard stuck on "scoring…".
+// Ingest can take up to ~90s on heavy GitHub profiles; keep this route explicit
+// so the dashboard does not get stuck mid-refresh.
 export const maxDuration = 120;
 
 export async function POST() {

@@ -30,7 +30,6 @@ packages/core/            Pure scoring + GitHub ingest (no IO in scoring fns)
   src/scoring/score.ts    Weighted composite (depth/breadth/recognition/craft/specialization)
   src/ingest/             GitHub GraphQL + REST via @octokit
 packages/db/              Drizzle schema, migrations, client
-packages/ui/              Shared UI primitives (not yet published)
 plans/                    Archived implementation plans
 ```
 

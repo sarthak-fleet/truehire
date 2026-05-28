@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-// Only hydrate Cloudflare bindings during local `next dev`. Skipped in Vercel
+// Only hydrate Cloudflare bindings during local `next dev`. Skipped in CI
 // CI and when producing the CF worker bundle (opennext runs its own build).
 if (
   process.env.NODE_ENV !== "production" &&
@@ -8,7 +8,7 @@ if (
   !process.env.CF_PAGES &&
   !process.env.OPEN_NEXT_BUILD
 ) {
-  // Dynamic import so the adapter code never enters the Vercel bundle at all.
+  // Dynamic import so the adapter code stays out of normal Next.js builds.
   import("@opennextjs/cloudflare")
     .then((m) => m.initOpenNextCloudflareForDev())
     .catch(() => {});

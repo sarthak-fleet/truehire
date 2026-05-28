@@ -51,10 +51,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: { signIn: "/login" },
   events: {
     async signIn({ user, account, isNewUser }) {
-      // We used to kick off ingest here as fire-and-forget, but Vercel
-      // serverless kills the lambda the moment this callback returns, so the
-      // ingest promise was being discarded mid-flight. The dashboard now
-      // drives ingest explicitly via /api/refresh, which owns its lambda
+      // We used to kick off ingest here as fire-and-forget, but serverless
+      // runtimes can stop work when the callback returns. The dashboard now
+      // drives ingest explicitly via /api/refresh, which owns its request
       // lifetime (maxDuration: 120s).
       //
       // We only touch status here: leaving it "idle" so the client-side
