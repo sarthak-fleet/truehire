@@ -44,9 +44,6 @@ importers:
       '@saas-maker/feedback':
         specifier: ^0.2.1
         version: 0.2.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@saas-maker/posthog-client':
-        specifier: ^0.1.0
-        version: 0.1.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@saas-maker/testimonials':
         specifier: ^0.2.1
         version: 0.2.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -74,6 +71,9 @@ importers:
       next-auth:
         specifier: 5.0.0-beta.31
         version: 5.0.0-beta.31(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)
+      posthog-js:
+        specifier: ^1.372.1
+        version: 1.372.1
       react:
         specifier: 19.2.5
         version: 19.2.5
@@ -1930,9 +1930,6 @@ packages:
   '@posthog/core@1.27.5':
     resolution: {integrity: sha512-sYCcUDuYKumYTjwGqGCPT8aUy086v9PKw5wD+UXCRSfCsxWy5R/ic6W13kGTn4O5B2cD1V19wJv19oIH5kHUiQ==}
 
-  '@posthog/core@1.3.0':
-    resolution: {integrity: sha512-hxLL8kZNHH098geedcxCz8y6xojkNYbmJEW+1vFXsmPcExyCXIUUJ/34X6xa9GcprKxd0Wsx3vfJQLQX4iVPhw==}
-
   '@posthog/types@1.372.1':
     resolution: {integrity: sha512-yl2x2HgtdhFk8bvf6HuRSDzXnKmKGrzNxUahKvA/0mcwheweINvmWy5MsN55NevrcCrNXA6m8GPHS9o/y1mn4A==}
 
@@ -2112,17 +2109,6 @@ packages:
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
-
-  '@saas-maker/posthog-client@0.1.0':
-    resolution: {integrity: sha512-G8DsrfFWct9Rxao4ypEda+m27JeGGSacLYs5JV8Hlpu2JEqJKHOVJKdR9IqX6mQqS9J8Ojrj55EC4o0RJZRtew==}
-    peerDependencies:
-      react: 19.2.5
-      react-dom: 19.2.5
-    peerDependenciesMeta:
-      react:
-        optional: true
-      react-dom:
-        optional: true
 
   '@saas-maker/testimonials@0.2.1':
     resolution: {integrity: sha512-mioGG90lztefuWFKCFPDyv8fmL0+Na2eniHlKuc2Ug35sahIgGqdWsjjTFsVIvuY59gaVyj+iJMV4KmVTeTwBA==}
@@ -4281,10 +4267,6 @@ packages:
 
   posthog-js@1.372.1:
     resolution: {integrity: sha512-gP316wDc36YbieIEW48wfB6wq2ugBNQc+XwNkewN9QRPzhitX+9dG6lUjqHEhMx3A2Y41HjbZf5Vl0Ll0ju8UA==}
-
-  posthog-node@5.10.1:
-    resolution: {integrity: sha512-FMGGi0fhth8hkEZg1J0Zo5nWY+s2G0v+BoyjyRlHDm/NrRFj+pXNq3MQP4cNCcBxjM54CqSJZSPcPmFWSHSb3w==}
-    engines: {node: '>=20'}
 
   preact-render-to-string@6.5.11:
     resolution: {integrity: sha512-ubnauqoGczeGISiOh6RjX0/cdaF8v/oDXIjO85XALCQjwQP+SB4RDXXtvZ6yTYSjG+PC1QRP2AhPgCEsM2EvUw==}
@@ -6759,8 +6741,6 @@ snapshots:
     dependencies:
       '@posthog/types': 1.372.1
 
-  '@posthog/core@1.3.0': {}
-
   '@posthog/types@1.372.1': {}
 
   '@protobufjs/aspromise@1.1.2': {}
@@ -6865,14 +6845,6 @@ snapshots:
 
   '@saas-maker/feedback@0.2.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
-      react: 19.2.5
-      react-dom: 19.2.5(react@19.2.5)
-
-  '@saas-maker/posthog-client@0.1.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
-    dependencies:
-      posthog-js: 1.372.1
-      posthog-node: 5.10.1
-    optionalDependencies:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
 
@@ -8189,7 +8161,7 @@ snapshots:
       '@next/eslint-plugin-next': 16.2.4
       eslint: 10.2.1(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@10.2.1(jiti@2.6.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1)))(eslint@10.2.1(jiti@2.6.1))
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint-import-resolver-typescript@3.10.1)(eslint@10.2.1(jiti@2.6.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@10.2.1(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@10.2.1(jiti@2.6.1))
@@ -8212,7 +8184,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@10.2.1(jiti@2.6.1)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1)))(eslint@10.2.1(jiti@2.6.1)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.3
@@ -8227,14 +8199,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@10.2.1(jiti@2.6.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1)))(eslint@10.2.1(jiti@2.6.1)))(eslint@10.2.1(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)
       eslint: 10.2.1(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@10.2.1(jiti@2.6.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1)))(eslint@10.2.1(jiti@2.6.1))
     transitivePeerDependencies:
       - supports-color
 
@@ -8249,7 +8221,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 10.2.1(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.10
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@10.2.1(jiti@2.6.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1)))(eslint@10.2.1(jiti@2.6.1)))(eslint@10.2.1(jiti@2.6.1))
       hasown: 2.0.3
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -9293,10 +9265,6 @@ snapshots:
       preact: 10.29.1
       query-selector-shadow-dom: 1.0.1
       web-vitals: 5.2.0
-
-  posthog-node@5.10.1:
-    dependencies:
-      '@posthog/core': 1.3.0
 
   preact-render-to-string@6.5.11(preact@10.24.3):
     dependencies:

@@ -25,7 +25,6 @@
     "@opennextjs/cloudflare": "1.19.4",
     "@paralleldrive/cuid2": "3.3.0",
     "@saas-maker/feedback": "^0.2.1",
-    "@saas-maker/posthog-client": "^0.1.0",
     "@saas-maker/testimonials": "^0.2.1",
     "@truehire/core": "workspace:*",
     "@truehire/db": "workspace:*",
@@ -37,7 +36,8 @@
     "next-auth": "5.0.0-beta.31",
     "react": "19.2.5",
     "react-dom": "19.2.5",
-    "tailwind-merge": "3.5.0"
+    "tailwind-merge": "3.5.0",
+    "posthog-js": "^1.372.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "4.20260424.1",

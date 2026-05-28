@@ -1,6 +1,7 @@
 "use client";
 
-import { PostHogProvider } from "@saas-maker/posthog-client";
+import posthog from "posthog-js";
+import { PostHogProvider } from "posthog-js/react";
 import { SessionProvider } from "next-auth/react";
 import { useEffect, type ReactNode } from "react";
 
@@ -12,10 +13,7 @@ export function Providers({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <PostHogProvider
-      apiKey="phc_qgiAarw4Co4pw9fz3Fxj4UJaHmqzFetqs4JrXhGc35Nd"
-      host="https://us.i.posthog.com"
-    >
+    <PostHogProvider client={posthog}>
       <SessionProvider>{children}</SessionProvider>
     </PostHogProvider>
   );

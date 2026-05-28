@@ -6,29 +6,13 @@
  * cross-fleet funnel (signup -> activated -> core_action) and a D1/D7
  * retention insight, with no custom dashboard.
  *
- * Every event carries a `project` property. This is what makes per-app and
+ * Every event carries a `project_id` property. This is what makes per-app and
  * cross-fleet views possible from one PostHog login.
  *
- * The wrapper is isomorphic: in the browser it routes through
- * `@saas-maker/posthog-client` (`track`); inside a server action / route
- * handler it routes through `@saas-maker/posthog-client/server` so the
- * server-triggered events (`activated`, `core_action`) still land.
+ * The wrapper is isomorphic: in the browser it routes through `posthog-js`;
+ * inside a server action / route handler it posts directly to the PostHog
+ * capture API so server-triggered events (`activated`, `core_action`) land.
  */
-
-import {
-  createPostHogServer,
-  getServerClient,
-  trackServer,
-} from "@saas-maker/posthog-client/server";
-
-// NOTE: `@saas-maker/posthog-client` (the browser entry) bundles `PostHogProvider`,
-// which calls `React.createContext` at module-evaluation time. A static top-level
-// import would therefore execute `createContext` during SSR / `next build` page-data
-// collection and crash with "createContext is not a function". This module is
-// isomorphic and only needs the browser client inside the browser branch of
-// `emit()`, so the browser client is loaded lazily via dynamic `import()` there.
-// The `/server` entry above is React-free (`posthog-node`) and is safe to import
-// statically.
 
 const PROJECT = "truehire" as const;
 
@@ -58,41 +42,46 @@ export type CoreAction =
  */
 interface AnalyticsEventMap {
   /** First session after an account is created. */
-  signup: { project: typeof PROJECT };
+  signup: { project_id: typeof PROJECT };
   /** The user reaches first real value — their first computed score. */
-  activated: { project: typeof PROJECT };
+  activated: { project_id: typeof PROJECT };
   /** The thing the product exists to do. */
-  core_action: { project: typeof PROJECT; action: CoreAction };
+  core_action: { project_id: typeof PROJECT; action: CoreAction };
   /** A return session by a user with prior activity. */
-  returned: { project: typeof PROJECT };
+  returned: { project_id: typeof PROJECT };
 }
 
-function ensureServerClient() {
-  if (!getServerClient()) {
-    createPostHogServer({ apiKey: POSTHOG_KEY, host: POSTHOG_HOST });
-  }
+function emitServer(event: string, props: Record<string, unknown>, distinctId?: string): void {
+  void fetch(`${POSTHOG_HOST}/i/v0/e/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      api_key: POSTHOG_KEY,
+      event,
+      distinct_id: distinctId ?? `${PROJECT}-server`,
+      properties: props,
+    }),
+  }).catch(() => {
+    // Analytics must never block or break a server action.
+  });
 }
 
-function emit<K extends keyof AnalyticsEventMap>(
-  event: K,
-  props: Omit<AnalyticsEventMap[K], "project">,
+export function trackEvent(
+  event: string,
+  properties: Record<string, unknown> = {},
   distinctId?: string,
 ): void {
-  const payload = { project: PROJECT, ...props };
+  const payload = { project_id: PROJECT, ...properties };
   try {
     if (typeof window === "undefined") {
       // Server context (server action / route handler).
-      ensureServerClient();
-      trackServer(event, {
-        distinctId: distinctId ?? `${PROJECT}-server`,
-        properties: payload,
-      });
+      emitServer(event, payload, distinctId);
     } else {
       // Browser context. Load the browser client lazily so the React-dependent
-      // `@saas-maker/posthog-client` entry is never evaluated during SSR.
-      void import("@saas-maker/posthog-client")
-        .then(({ track }) => {
-          track(event, payload);
+      // `posthog-js` entry is never evaluated during SSR.
+      void import("posthog-js")
+        .then(({ default: posthog }) => {
+          posthog.capture(event, payload);
         })
         .catch(() => {
           // Analytics must NEVER break a user flow. Swallow and move on.
@@ -101,6 +90,14 @@ function emit<K extends keyof AnalyticsEventMap>(
   } catch {
     // Analytics must NEVER break a user flow. Swallow and move on.
   }
+}
+
+function emit<K extends keyof AnalyticsEventMap>(
+  event: K,
+  props: Omit<AnalyticsEventMap[K], "project_id">,
+  distinctId?: string,
+): void {
+  trackEvent(event, props, distinctId);
 }
 
 /**
