@@ -204,7 +204,7 @@ export default function MethodologyPage() {
 
       <p className="mt-10 text-xs text-stone-500">
         Disagree with a weight or the framing? The full implementation is in{" "}
-        <Link className="underline" href="https://github.com/sarthakagrawal927/truehire">
+        <Link className="underline" href="https://github.com/sarthak-fleet/truehire">
           the repo
         </Link>{" "}
         — open a PR. Changes to any weight require a corresponding test
