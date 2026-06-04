@@ -15,6 +15,7 @@ if (
 }
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   devIndicators: false,
   typedRoutes: false,
   images: {

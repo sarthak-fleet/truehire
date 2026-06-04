@@ -10,8 +10,6 @@ import { Badge } from "@/components/atoms/badge";
 import { Card, CardBody } from "@/components/atoms/card";
 import { LiveHeroProfileDemo } from "./live-hero-profile-demo";
 
-export const revalidate = 3600;
-
 export default function LandingPage() {
   return (
     <>
