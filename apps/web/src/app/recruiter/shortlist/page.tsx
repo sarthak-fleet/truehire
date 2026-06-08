@@ -4,6 +4,7 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   CircleAlert,
+  FileSearch,
   GitCompareArrows,
   Search,
   UsersRound,
@@ -66,11 +67,18 @@ export default async function RecruiterShortlistPage(props: {
             their verified public-work score.
           </p>
         </div>
-        <Link href="/dashboard">
-          <Button variant="secondary" size="sm" leftIcon={<BriefcaseBusiness className="h-4 w-4" />}>
-            Candidate dashboard
-          </Button>
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/recruiter/resume-audit/demo">
+            <Button variant="secondary" size="sm" leftIcon={<FileSearch className="h-4 w-4" />}>
+              Resume audit demo
+            </Button>
+          </Link>
+          <Link href="/dashboard">
+            <Button variant="secondary" size="sm" leftIcon={<BriefcaseBusiness className="h-4 w-4" />}>
+              Candidate dashboard
+            </Button>
+          </Link>
+        </div>
       </section>
 
       <Card className="mt-8">

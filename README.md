@@ -95,6 +95,7 @@ Secrets via `wrangler secret put` only (never in `vars`):
 ## Key constraints
 
 - **Ingest is fire-and-forget.** `signIn` dispatches a GitHub ingest async — auth redirect never blocks. The `/@handle` page polls during its own render.
+- **Resume claim audit treats resumes as untrusted input.** The fixture-backed recruiter prototype checks pasted resume claims against verified GitHub evidence and reports gaps as missing proof, not negative skill judgments.
 - **`/@handle` route** uses a `startsWith("@")` guard so usernames don't collide with other dynamic routes.
 - **GitHub rate limit**: 5,000 req/hr per OAuth token. Manual refresh is rate-limited at the route level.
 - **Pre-commit**: husky runs `scripts/secret-scan.mjs` via lint-staged.
