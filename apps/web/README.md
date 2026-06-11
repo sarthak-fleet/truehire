@@ -7,7 +7,7 @@ Next.js app for TrueHire public profiles, dashboard, recruiter surfaces, and Git
 Run from the repository root:
 
 ```bash
-pnpm --filter @truehire/web dev
+pnpm --filter web dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -15,9 +15,9 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 Useful checks:
 
 ```bash
-pnpm --filter @truehire/web typecheck
-pnpm --filter @truehire/web test
-pnpm --filter @truehire/web build
+pnpm --filter web typecheck
+pnpm --filter web test
+pnpm --filter web build
 ```
 
 ## Deployment
