@@ -49,9 +49,9 @@ export default function LandingPage() {
                   Claim your profile
                 </Button>
               </Link>
-              <Link href="#how">
-                <Button size="lg" variant="outline" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                  How the score works
+              <Link href="/methodology">
+                <Button size="lg" variant="ghost" rightIcon={<ArrowRight className="h-4 w-4" />}>
+                  See the methodology
                 </Button>
               </Link>
             </div>
@@ -184,11 +184,12 @@ export default function LandingPage() {
               body="A transparent 0–100 composite with the receipts behind every number. Recomputed weekly." />
           </ol>
 
-          <div className="mt-12 grid grid-cols-1 gap-3 md:grid-cols-4">
+          <div className="mt-12 grid grid-cols-1 gap-3 md:grid-cols-5">
             {[
-              ["Depth", "30%", "Months active, recency-weighted"],
-              ["Breadth", "20%", "Distinct meaningful repos"],
-              ["Recognition", "35%", "Stars, merged PRs to 100★+ repos"],
+              ["Recognition", "30%", "Stars + merged PRs to 100★+ repos"],
+              ["Depth", "20%", "Months active, recency-weighted"],
+              ["Craft", "20%", "CI, tests, reviews, commit quality"],
+              ["Breadth", "15%", "Distinct meaningful repos, capped at 40"],
               ["Specialization", "15%", "Concentration in a top language"],
             ].map(([n, w, d]) => (
               <Card key={n}>

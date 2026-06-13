@@ -9,8 +9,8 @@ import { Button } from "@/components/atoms/button";
 import { GithubIcon as Github } from "@/components/atoms/github-icon";
 
 const NAV_LINKS = [
-  { href: "/#how", label: "How it works" },
   { href: "/#signals", label: "Signals" },
+  { href: "/methodology", label: "Methodology" },
   { href: "/recruiter/shortlist", label: "Recruiters" },
   { href: "/#faq", label: "FAQ" },
 ];

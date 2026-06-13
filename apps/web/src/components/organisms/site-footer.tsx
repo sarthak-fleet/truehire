@@ -25,8 +25,13 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-[var(--border)]">
-        <div className="mx-auto w-full max-w-6xl px-6 py-4 text-[11px] text-[var(--muted-2)]">
-          © {new Date().getFullYear()} TrueHire — derived, not declared.
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
+          <p className="text-[11px] text-[var(--muted-2)]">
+            © {new Date().getFullYear()} TrueHire — derived, not declared.
+          </p>
+          <p className="text-[11px] text-[var(--muted-2)] hidden sm:block">
+            No bios. No skills lists. No tailoring. Just verified work.
+          </p>
         </div>
       </div>
     </footer>
