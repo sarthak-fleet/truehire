@@ -153,7 +153,8 @@ export async function latestVerificationForWorkHistory(workHistoryId: string) {
     .select()
     .from(schema.employerVerifications)
     .where(eq(schema.employerVerifications.workHistoryId, workHistoryId));
-  // Prefer confirmed > pending > denied > expired, tie-break on recency.
+  // Return the most recent verification request for this work-history row.
+  // If two rows share a timestamp, prefer the more resolved state.
   const rank: Record<string, number> = {
     confirmed: 0,
     pending: 1,
@@ -162,8 +163,8 @@ export async function latestVerificationForWorkHistory(workHistoryId: string) {
     expired: 4,
   };
   return rows.sort(
-    (a, b) => rank[a.status] - rank[b.status] ||
-      b.requestedAt.getTime() - a.requestedAt.getTime(),
+    (a, b) => b.requestedAt.getTime() - a.requestedAt.getTime() ||
+      rank[a.status] - rank[b.status],
   )[0] ?? null;
 }
 
