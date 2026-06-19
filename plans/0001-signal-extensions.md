@@ -1,8 +1,18 @@
 # Plan 0001 — Signal extensions from idea backlog
 
-**Status:** backlog (post-MVP)
-**Created:** 2026-04-26
+**Status:** superseded (detailed plans now live as 0002 and 0003)  
+**Created:** 2026-04-26  
+**Updated:** 2026-06-13  
 **Source:** moved from `saas-ideas/README.md`
+
+This file is the original high-level backlog note. The two ideas have been promoted to full implementation plans:
+
+- **Commit storyteller** → see `plans/0002-commit-storyteller.md` (ready for implementation)
+- **Repo-history analyser** → see `plans/0003-repo-history-analyser.md` (ready for implementation)
+
+Both still extend PRD §2 (costly signals) and §14 (open questions) and are blocked on MVP score validation + explicit feedback per the original sequencing note below.
+
+---
 
 Two adjacent ideas that compound TrueHire's GitHub-signal layer once the MVP score is calibrated. Both extend Section 2 ("costly signals") and Section 14 ("open questions") of `PRD.md`.
 

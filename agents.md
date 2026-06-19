@@ -45,7 +45,7 @@ packages/
     src/migrate.ts
     drizzle.config.ts
   ui/                      # Shared UI components (not yet published)
-plans/                     # Archived implementation plans
+plans/                     # Archived implementation plans (0002/0003/0004 finished 2026-06; see docs/ + retrospective)
 PRD.md                     # Full product requirements
 ```
 

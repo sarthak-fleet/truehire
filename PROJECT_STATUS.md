@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-06-08
+Last updated: 2026-06-13
 
 ## Current Scope
 
@@ -16,13 +16,14 @@ TrueHire is a verified candidate platform where transparent 0-100 scores are der
 - Recruiter proof improvements are complete, including score proof, recruiter explanation, evidence source labels, risk flags, next-action comparison, and a job-description evaluation demo.
 - A fixture-backed resume claim audit prototype now separates candidate-supplied resume claims from verified public GitHub proof.
 - Local E2E has a disposable database wrapper for reliable smoke testing without production secrets.
+- Documentation refresh complete (2026-06-13): original long PRD archived, high-level PRD v0.2 (shorter, current-state pointers), all 4 plans finished as implementation-ready specs, focused short docs created (signal-1, signal-2, recruiter-proof-tools, public surfaces, decisions), learning retrospective + decisions log added. All per documentation preferences (shorter pages, DRY, journey artifacts, preserve-on-consolidate) and fleet rules (single PROJECT_STATUS as source of truth, plans kept in sync).
 
 ## Planned Next
 
 1. Validate the MVP score with real candidate profiles and recruiter feedback.
 2. Calibrate scoring weights only with corresponding core tests and methodology updates.
 3. Decide whether resume claim audit should graduate from fixture prototype to live recruiter workflow with pasted resume text and selected TrueHire handles.
-4. Decide whether the next extension should be candidate-side commit storytelling or deeper repo-history analysis once MVP trust or growth feedback is clear.
+4. Decide whether the next extension should be candidate-side commit storytelling (`plans/0002`) or deeper repo-history analysis (`plans/0003`) or no-signal onboarding polish (`plans/0004`) once MVP trust or growth feedback is clear. (All three plans are now finished implementation specs.)
 5. Keep recruiter proof concrete before adding broader hiring workflow features.
 
 ## Deferred / Parked

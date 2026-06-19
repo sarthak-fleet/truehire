@@ -1,9 +1,9 @@
 # TrueHire — Product Requirements Document
 
-**Version:** 0.1 (draft)
-**Owner:** Sarthak Agrawal
-**Last updated:** 2026-04-24
-**Status:** Pre-MVP, scoping
+**Version:** 0.2  
+**Owner:** Sarthak Agrawal  
+**Last updated:** 2026-06-13  
+**Status:** MVP (Signal 1) shipped + recruiter proof surfaces live; Signal 2 scaffold complete; extensions in validation
 
 ---
 
@@ -70,298 +70,106 @@ Long term: the profile is the resume.
 
 ## 6. MVP scope — "Signal 1: Public Work"
 
-Single signal. Ship in 2 weeks. Validate demand before building signals 2-4.
+Single signal. Validate demand before building signals 2-4.
 
-### 6.1 Core flow
+### Core flow (high level)
+1. Candidate signs up with GitHub OAuth.
+2. System pulls public repos, commits over time, contributions to popular repos (≥100★), releases, issue/PR activity.
+3. Compute 0-100 composite from costly, verifiable GitHub signals.
+4. Produce public profile at `/@handle` (or `/handle`) with hero score, evidence rail, language breakdown, activity timeline, "last verified" badge.
+5. Candidate shares link or embeds badge; third parties view evidence directly.
 
-1. Candidate signs up with GitHub OAuth
-2. We pull:
-   - All public repos authored / committed to
-   - Commit count over time, by language
-   - Contributions to popular repos (threshold: repos with ≥100 stars)
-   - Release history, issue/PR activity
-3. We score:
-   - **Depth:** sustained activity over years vs recent burst
-   - **Breadth:** distinct projects, languages, domains
-   - **Recognition:** stars earned on authored repos, merged PRs to high-star repos
-   - **Specialization:** dominant language(s), dominant domain (infra, ML, frontend, etc.)
-4. We produce a public profile at `truehire.dev/@username`:
-   - Hero score (0-100, weighted composite)
-   - Evidence rail: top 10 contributions, ordered by weight
-   - Language/domain breakdown
-   - Activity timeline chart
-   - "Last verified: <date>" badge
-5. Candidate shares the profile link in applications, or embeds score badge in their own site
+### Key design decisions
+- **Derived, never declared.** No user-written bio, summary, skills, or title. Everything traces to verified GitHub data.
+- **Public by default.** Profiles indexed and shareable. (Privacy later.)
+- **No peer ranking in v1.** Absolute score + transparent evidence only.
+- **Recompute on demand (rate-limited) + periodic.** Dashboard-driven ingest + SSE progress (sign-in only resets status).
 
-### 6.2 Out of scope for MVP
+Detailed current implementation, exact weights/caps/half-lives, craft signals, meaningful-contribution gates, blocklists, core-contributor logic, and exports live in:
+- `docs/signal-1-public-work.md`
+- `/methodology` (imports `SCORING_WEIGHTS` / `CAPS` / `HALF_LIVES` live from `@truehire/core` — zero drift)
+- `packages/core/src/scoring/score.ts` + `ingest/github.ts` (pure functions, 100% test coverage required)
 
-- Manual profile editing (profile = derived from GitHub, not user-written)
-- Recruiter-side tools (view profile = open public URL)
-- Payment (free during signal-validation phase)
-- Multi-signal aggregation (only signal 1)
-- Other providers (GitLab, Bitbucket, Kaggle, arXiv — all phase 2)
+## 7. Current shipped state (as of 2026-06)
 
-### 6.3 Key design decisions
+MVP Signal 1 core + "recruiter proof" surfaces are live. These validate the costly-signal thesis with real recruiter interaction without turning the product into an ATS or sourcing tool (see non-goals).
 
-- **Derived not declared.** User cannot write their own bio, summary, skills list. Everything is computed from verified sources. This is the entire point.
-- **Public by default.** Profiles are indexed, shareable, linkable. Privacy toggle in v2, not v1.
-- **No ranking against peers in v1.** Absolute score only. Leaderboards come later once we have enough users to benchmark. Premature ranking would create PR backlash ("TrueHire says you're a bad engineer").
-- **Recompute weekly.** Contribution data changes. Recompute opens conversation: "your score went up — share it".
+**Shipped (Signal 1 + extensions):**
+- Full GitHub ingest (GraphQL contribution calendar + authored repos + craft signals for CI/tests/README/license/releases/collaborators + commit quality), pure 5-axis scoring (Recognition 30%, Depth 20%, Craft 20%, Breadth 15%, Specialization 15%), versioned scores (signal1 + signal2 bonus), activity months for depth + timelines.
+- Public `/@handle` profiles, dashboard (SSE bootstrap + manual refresh, rate-limited), role-fit per profile, work history (self-claim), history page, embed/OG/badge.svg/data.json/repos.csv exports, compare, recent, stats, suggest (axis headroom).
+- Craft axis, RiskFlags (non-judgmental data-gap signals), evidence source labels, recruiter takeaway with dual CTAs ("Contact on GitHub" + "Review evidence").
+- All surfaces emphasize "derived from public GitHub only."
 
-## 7. Phase 2 — Signal 2: Employer verification
+**Signal 2 scaffold (Phase 2 partial):**
+- `work_history` + `employer_verifications` tables (HMAC-signed tokens, 14-day expiry, status: pending/confirmed/denied/disputed/expired, method enum, cryptographic signature on response).
+- `computeSignal2` (25 base + 4/yr tenure, capped) + 0.15 overall bonus (max +15).
+- Public "Verified" chips (domain signer) vs self-claimed/pending/disputed (zero contribution). Recompute on verification change without re-ingest.
+- Beta UX in dashboard: add role (YYYY-MM), request verification (returns manual-forwardable link; "Email delivery isn’t wired yet").
+- `/verify/[token]` + respond flow. "We do not arbitrate" disputes.
 
-Timeline: months 3-5 after MVP launch.
+**Recruiter-proof toolkit (MVP+):**
+- Pure-core `role-fit` (JD → extracted requirements by category/keywords → evidence match + gap + remediation suggestions).
+- `resume-claim-audit` prototype (resume text treated as untrusted claims; produces verified/partial/unverified findings + coverage + explicit fairness caveats: "Unverified ≠ lacks the skill"; "Do not use as proxy for protected attributes").
+- Hiring domain: roles (name + description + auto-extracted `requirements_json`), pipelines (per-role, active/closed), candidates (by @handle, stages), evaluations (per-requirement scores + overall rec + notes).
+- Surfaces: `/recruiter/roles/*`, `/recruiter/pipelines/*` (stage view + evaluate), `/recruiter/shortlist` (multi-candidate JD comparison + export), resume-audit demo (fixture-backed).
+- Used for concrete evidence-backed evaluation while staying a credential layer.
 
-### 7.1 Core flow
+**Constraints honored:** GitHub-only, 100% coverage on pure core logic, ingest is dashboard/SSE-driven (not fire-and-forget after sign-in), no pseudonymous profiles, no user-editable profile fields, no leaderboards, no forbidden stack items.
 
-1. Candidate enters work history
-2. TrueHire emails `hr@<company-domain>` (or a specific HR contact) asking "confirm X was Y role from Z1-Z2"
-3. HR clicks signed link → one-click confirm / deny / partial-confirm
-4. Confirmation cryptographically signed with TrueHire-issued employer key (one key per company, issued on first confirm)
-5. Profile shows green check on verified history entries
+See `PROJECT_STATUS.md` (single source of truth for Done / Planned Next / Deferred). See `docs/` for canonical topic pages. See `plans/` for next extension specs.
 
-### 7.2 Edge cases to design
+## 8. Phased roadmap (condensed)
 
-- Employer doesn't respond → "pending" state, candidate can nudge
-- Employer disputes → surface dispute publicly (we do not arbitrate)
-- Candidate worked at dead/acquired company → alternative verification paths (tax records, pay stubs via Plaid / Argyle)
-- Small employer without HR → founder/manager email works
+**Phase 1 / MVP+ (current):** Signal 1 (public GitHub work) + craft + recruiter-proof surfaces (role-fit, claim audit, pipelines for evaluation only). Validate score trust and growth loops.
 
-### 7.3 Trust hierarchy
+**Phase 2 (Signal 2 — Employer verification):** Candidate-entered work history + signed employer confirm (email or manager or peer). Green verified chips + small bonus to overall. Scaffold complete (crypto, scoring, UI flows); real transactional email and payroll alternatives remain. Trust hierarchy: automated > HR email > peer > unverified. "We do not arbitrate."
 
-- **Automated** (payroll provider integration via Rippling/Gusto/Workday): highest trust
-- **Semi-automated** (HR email confirm): high trust
-- **Peer** (former manager at same employer confirms): medium trust
-- **Unverified** (candidate-entered only): shown greyed out
+**Phase 3 (Signal 3 — Reputation bonds):** Stakers (referrers, colleagues, self) put money/reputation on claims. Kalshi-style: truth is what people bet on. Escrow on placement, forfeit on failure. Legal + liability review required before broad use. Low early volume bootstrapped internally.
 
-## 8. Phase 3 — Signal 3: Reputation bonds
+**Phase 4 (Signal 4 — Paid audition):** 2-week paid contract (pro-rated target comp) → convert. TrueHire handles contract/escrow/NDA + outcome feedback (future signal 5). High margin, low volume complement to lower-tier signals.
 
-Timeline: months 5-8.
+Later phases remain deferred until Signal 1 + early Signal 2 are validated with real usage and recruiter feedback. See PROJECT_STATUS.md.
 
-### 8.1 Concept
+## 9. Open questions
 
-Anyone can stake money or reputation on any claim about a candidate. Staker loses the stake if the claim proves false.
+- **Pseudonymous profiles:** handle-only vs real name? (Protects from discrimination vs kills recruiter trust for real hires.) Enforced real-name-linked (GitHub) for now.
+- **Score decay / recency:** already addressed via half-lives (30-month depth, 48-month recognition freshness) + activity-month weighting. Monitor whether career-changers or returners need additional floor logic.
+- **No-signal / sparse profiles:** students, career-changers, strong private-work builders get honest "not enough verified public work yet" treatment. Dedicated guidance + improvement path without fake scores or claims. Direction captured in `plans/0004-no-signal-onboarding.md`.
+- **Non-GitHub signals:** strictly GitHub for core MVP+ (narrower, faster, higher-signal). Kaggle/arXiv/writing/talks considered for later orthogonal layers only after GitHub trust is solid.
+- **Growth vs depth extensions:** storyteller (recurring share artifact) vs repo-history analyser (critical-path ownership, effort proxies) — see `plans/0002` and `0003`. Decide after MVP score validation feedback.
 
-### 8.2 Mechanisms
+## 10. Milestones
 
-- **Referral bond:** referrer stakes $200-$2000 on "this candidate will stay and not be fired-for-cause for 90 days". Payout from hiring company on successful placement minus the bond as escrow. If candidate fails, stake is forfeited.
-- **Self-claim bond:** candidate stakes personally on "I will ship X feature in Y weeks if hired for Z role". Verified by employer post-hire.
-- **Third-party vouch:** former colleague stakes smaller amount ($50-$200) on one specific claim ("shipped the payments system at Stripe end-to-end"). Verified by follow-up calls.
-
-### 8.3 Why this works
-
-Kalshi/Polymarket-style: truth is what people bet on. Applied to hiring: truth is what people bet their money / reputation on. Unfakeable in aggregate.
-
-### 8.4 Risks
-
-- Liability: we're hosting a prediction market on humans. Legal review needed.
-- Payout disputes: need clear escrow terms, arbitrator of last resort.
-- Low-volume early: need critical mass of stakers to work. Bootstrap with our own capital in early experiments.
-
-## 9. Phase 4 — Signal 4: Paid audition
-
-Timeline: months 8-12.
-
-### 9.1 Concept
-
-Two-week paid contract (at candidate's target comp, pro-rated) → convert to FT.
-
-### 9.2 Flow
-
-- Candidate opts in to "available for audition"
-- Company selects candidate from their TrueHire-matched pool
-- TrueHire handles:
-  - Contract (1099 / contractor agreement)
-  - Payment escrow (company pays TrueHire, TrueHire pays candidate on completion)
-  - NDA + IP assignment templates
-  - Outcome feedback form (signal 5: outcome tracking)
-- Optional conversion to FT with standard offer letter
-
-### 9.3 Why this works
-
-Two weeks of real work = highest-signal interview possible. Company sees actual output. Candidate sees actual team and role. Auttomatic / GitLab do this internally; we make it a market.
-
-### 9.4 Economics
-
-- Company pays candidate: standard 2-week salary-equivalent ($5-10k for senior eng)
-- TrueHire fee: 15% on the audition + 10% on conversion
-- High gross margin, low volume. Complementary to lower-tier signals.
-
-## 10. Technical architecture
-
-### 10.1 Stack
-
-Same as RolePatch (user's standing preference):
-
-- **Framework:** Next.js 16 + React 19 + TypeScript
-- **Styling:** Tailwind 4
-- **Database:** Turso (libsql) — SQLite edge
-- **Auth:** NextAuth v5 beta with GitHub OAuth only (GitHub is the signal source)
-- **Deployment:** Cloudflare Workers via OpenNext
-- **Testing:** Vitest + Playwright
-- **Package manager:** pnpm
-
-### 10.2 Services
-
-| Service | Purpose | MVP? |
-|---|---|---|
-| GitHub REST + GraphQL API | Fetch contributions, repos, stars | ✅ |
-| Octokit | SDK for GitHub API | ✅ |
-| App-hosted refresh endpoints | Contribution scoring and refresh orchestration | ✅ |
-| Next.js OG image routes | Share-card image generation for profile URLs | ✅ |
-| Resend | Transactional email (employer verification in P2) | Phase 2 |
-| Plaid / Argyle | Payroll / income verification | Phase 2 |
-| Stripe Connect / Wise | Escrow + payouts for reputation bonds and audition | Phase 3 |
-
-### 10.3 Data model (MVP)
-
-```sql
--- users: one row per signed-in candidate
-CREATE TABLE users (
-  id TEXT PRIMARY KEY,
-  github_id INTEGER UNIQUE NOT NULL,
-  github_username TEXT NOT NULL,
-  email TEXT,
-  created_at INTEGER NOT NULL,
-  last_scored_at INTEGER
-);
-
--- contributions: raw GitHub activity, refreshed weekly
-CREATE TABLE contributions (
-  user_id TEXT NOT NULL,
-  repo_full_name TEXT NOT NULL,
-  repo_stars INTEGER NOT NULL,
-  first_commit_at INTEGER,
-  last_commit_at INTEGER,
-  commits INTEGER,
-  additions INTEGER,
-  deletions INTEGER,
-  merged_prs INTEGER,
-  is_author BOOLEAN,
-  primary_language TEXT,
-  PRIMARY KEY (user_id, repo_full_name)
-);
+**Historical (MVP build):**
+- Scaffold, OAuth, ingest, basic scoring, public profile, OG, seeded anchors.
+- Launch, iterate scoring + embed/badge, methodology page (live constants).
 
--- scores: computed weekly, versioned
-CREATE TABLE scores (
-  user_id TEXT NOT NULL,
-  computed_at INTEGER NOT NULL,
-  overall INTEGER NOT NULL,      -- 0-100
-  depth INTEGER NOT NULL,
-  breadth INTEGER NOT NULL,
-  recognition INTEGER NOT NULL,
-  specialization_json TEXT,      -- JSON: top languages, domains
-  evidence_json TEXT,            -- JSON: top 10 contribution entries
-  PRIMARY KEY (user_id, computed_at)
-);
-```
+**Current (validation + proof):**
+- Recruiter-proof surfaces (score explanation, risk flags, next-action CTAs, JD eval, role-fit, resume-claim audit, pipelines/evals).
+- Signal 2 scaffold (work history + cryptographic verification + bonus blending).
+- Public exports, compare, history, suggest, stats, recent.
 
-### 10.4 Scoring algorithm (v0)
+**Next:**
+- Validate the MVP score with real candidate profiles and recruiter feedback.
+- Calibrate scoring weights only with corresponding core tests + methodology updates.
+- Decide whether resume-claim-audit graduates from fixture prototype to live recruiter workflow.
+- Decide next extension (commit storyteller vs repo-history analyser vs no-signal onboarding polish) — see `plans/0002`, `0003`, `0004`.
+- Keep recruiter proof concrete before adding broader hiring workflow features.
 
-Weighted composite, 0-100:
+See `PROJECT_STATUS.md` for the durable record.
 
-- **Depth (30%):** log(distinct months with activity) / log(60) * 100. Capped at 5 years.
-- **Breadth (20%):** log(distinct repos authored + contributed) / log(50) * 100.
-- **Recognition (35%):** sum(repo_stars * contribution_ratio) across repos; log-scaled.
-- **Specialization bonus (15%):** concentration in top language / top domain; rewards depth in area.
+---
 
-All components log-scaled to avoid "Linus Torvalds effect" (one user with 100k commits drowns scale).
+**References & canonical homes (DRY):**
+- Detailed Signal 1 requirements + as-built: `docs/signal-1-public-work.md`
+- Signal 2 (as-built + remaining work): `docs/signal-2-employer-verification.md`
+- Recruiter proof toolkit (role-fit, audit, pipelines, shortlist): `docs/recruiter-proof-tools.md`
+- Public surfaces & exports: `docs/public-surfaces-exports.md`
+- Implementation plans for next features: `plans/`
+- Current status (Done / Next / Parked): `PROJECT_STATUS.md`
+- Live scoring numbers & philosophy: `/methodology` + `packages/core/src/scoring/`
+- Architecture, constraints, dev commands: `agents.md` + `README.md`
 
-**Explicit design choice:** v0 is transparent and boring. Not ML. Candidates must understand why they scored what they did. Black-box scoring loses trust.
+The original v0.1 full draft (with detailed old data model, scoring sketch, GTM, success metrics per phase, and appendix) is preserved at `docs/archive/prd-v0.1-draft-2026-04.md`.
 
-### 10.5 Background jobs
-
-- **Initial ingest:** on first sign-in, queue Octokit pulls for all repos/contributions. Max 5 min acceptable latency (ship "scoring..." state).
-- **Weekly refresh:** cron, re-pull deltas for all users, recompute scores.
-- **On-demand refresh:** manual trigger from profile page, rate-limited to 1 per day per user.
-
-### 10.6 Scale planning (not premature, reality check)
-
-MVP: 100 users, ~500 repos ingested each. 50k contribution rows. Trivial on Turso free tier.
-
-1k users: 500k rows. Still trivial.
-
-10k users: 5M rows. Still fine on Turso paid tier ($29/mo).
-
-No sharding concerns until 100k+ users.
-
-## 11. Go-to-market
-
-### 11.1 Launch sequence
-
-1. **Pre-launch (week -2):** seed 50 profiles of known-strong engineers (OSS maintainers, ex-FAANG ICs, popular tech twitter) — their profiles become anchor cases
-2. **Soft launch (week 0):** Show HN + Twitter post. Pitch: "your GitHub as a verified resume"
-3. **Growth loop:** every profile has a share button + embeddable score badge. Candidates market us to each other.
-4. **B2B touch (month 2):** cold-email 20 recruiters at hiring-active startups. "Search TrueHire profiles instead of LinkedIn. Free beta."
-
-### 11.2 Growth experiments (post-launch)
-
-- **"What's your TrueHire score?"** Twitter campaign — encourages sharing
-- **Compare two profiles** — side-by-side, viral mechanic (consent required, only shown if both users opt in)
-- **"Hidden gems"** — email recruiters monthly with under-radar high-scoring users
-- **RolePatch funnel:** users who tailor 3+ resumes get prompt to "stop tailoring, start being trusted"
-
-### 11.3 Monetization (not in MVP)
-
-- Free: public profile, weekly score refresh
-- **Pro ($9/mo):** manual refresh anytime, private mode, export verified PDF, custom domain for profile
-- **Recruiter (B2B, $199/mo):** search by score, filter by specialization, bulk profile export, verified-candidate shortlist
-- **Enterprise (custom):** API access, integrations with ATS
-
-## 12. Risks and mitigations
-
-| Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|
-| GitHub deprecates API access for scoring services | Low | High | Rate-limit respect, fall back to graphql, diversify signals early |
-| Score gaming (bot commits, fake stars) | Medium | Medium | Require commits to repos with real issue/PR velocity; star-buying detection |
-| Recruiters don't trust our score | High early | High | Show underlying evidence, not just number; don't hide methodology |
-| Signal collapse (everyone has GitHub now) | Low | High | Phase 2 signals protect against single-signal collapse |
-| Legal risk (reputation bonds = regulated?) | Medium | High | Legal review before P3; consider dropping bonds if regulatory risk too high |
-| RolePatch cannibalization is a PR problem | Low | Medium | Separate brand, different domain. Funnel is opt-in, not forced. |
-
-## 13. Success metrics
-
-### Phase 1 (MVP → month 3)
-
-- **North star:** weekly active profile views by third parties (non-owner)
-- **Activation:** % of signed-up users who get first score within 5 min
-- **Retention:** % of users whose profile is refreshed (implies they're sharing it)
-- **External signal:** profile URLs shared on Twitter, LinkedIn, Reddit
-
-### Phase 2 (+ employer verification)
-
-- Verified work-history rate per profile (target: avg 2+ employers verified by month 6)
-- Employer activation rate (% who respond to verification email)
-
-### Phase 3 (+ reputation bonds)
-
-- GMV of staked bonds
-- Default rate on staked bonds (must be <10% for system credibility)
-
-### Phase 4 (+ audition)
-
-- Audition → hire conversion rate (target: 40%+)
-- Repeat company usage (target: companies running 3+ auditions/year)
-
-## 14. Open questions
-
-- Should we support **pseudonymous profiles** (handle only, no real name)? Pros: protects candidates from discrimination. Cons: kills recruiter trust for real hires. Decision needed before launch.
-- **Score decay over time:** should last activity matter more than total? E.g., someone with 10 years of commits ending 5 years ago — how should they score vs someone with 3 years ending last week? Answer shapes incentives.
-- **Non-code signals in MVP?** Should we ingest Kaggle / arXiv / writing in v1, or strictly GitHub? Argument for: richer profile. Against: narrower MVP ships faster.
-- **How to display "no signal yet"** for students / career-changers without real output? Crucial not to make them feel unwelcome. Possibly a separate onboarding path.
-
-## 15. Milestones
-
-- **Week 1-2:** scaffold repo, GitHub OAuth, basic ingest pipeline, MVP scoring
-- **Week 3-4:** public profile page, share card OG image, first 50 seeded profiles
-- **Week 5-6:** launch on HN / Twitter, 100 signups target
-- **Week 7-10:** iterate on scoring based on feedback, ship profile embed / score badge
-- **Week 11-12:** decide: double down on signal 1 polish, or start signal 2 build
-
-## 16. Appendix: why not these alternatives
-
-- **LinkedIn verification** (opens to real-name, phone, etc.) — they have verification but no scoring. Also, they are not going to prioritize candidates with few connections.
-- **Stack Overflow developer story** (sunset 2023) — pre-empted the idea but didn't execute. Closed, centralized, no growth loop.
-- **Polywork, Read.cv, Bento** — social-first profile builders. User-written, not verified. Same trust problem as resume.
-- **GitHub Profile README** — user-written. Not verified.
-- **Developer rank APIs (e.g., CodersRank)** — closest existing. Poor scoring transparency, little adoption, no costly-signal strategy beyond code. We position as "CodersRank + verified employer + reputation bonds + audition" — the stack.
+This document is intentionally high-level and stable. Topic depth lives in the focused docs/ pages.
