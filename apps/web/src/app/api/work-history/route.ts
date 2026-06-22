@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import {
   addWorkHistory,
-  latestVerificationForWorkHistory,
+  latestVerificationsForWorkHistories,
   listWorkHistory,
 } from "@/lib/verify-service";
 import { trackCoreAction } from "@/lib/analytics";
@@ -16,28 +16,28 @@ export async function GET() {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const rows = await listWorkHistory(session.user.id);
-  const withVerification = await Promise.all(
-    rows.map(async (r) => {
-      const v = await latestVerificationForWorkHistory(r.id);
-      return {
-        id: r.id,
-        company: r.company,
-        companyDomain: r.companyDomain,
-        title: r.title,
-        startDate: r.startDate,
-        endDate: r.endDate,
-        verification: v
-          ? {
-              id: v.id,
-              status: v.status,
-              verifierEmail: v.verifierEmail,
-              requestedAt: v.requestedAt.getTime(),
-              respondedAt: v.respondedAt?.getTime() ?? null,
-            }
-          : null,
-      };
-    }),
-  );
+  // Batch all verifications in one query instead of one per work-history row.
+  const latestByWh = await latestVerificationsForWorkHistories(rows.map((r) => r.id));
+  const withVerification = rows.map((r) => {
+    const v = latestByWh.get(r.id) ?? null;
+    return {
+      id: r.id,
+      company: r.company,
+      companyDomain: r.companyDomain,
+      title: r.title,
+      startDate: r.startDate,
+      endDate: r.endDate,
+      verification: v
+        ? {
+            id: v.id,
+            status: v.status,
+            verifierEmail: v.verifierEmail,
+            requestedAt: v.requestedAt.getTime(),
+            respondedAt: v.respondedAt?.getTime() ?? null,
+          }
+        : null,
+    };
+  });
   return NextResponse.json({ rows: withVerification });
 }
 

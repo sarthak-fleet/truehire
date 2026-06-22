@@ -15,7 +15,7 @@
 import { createHmac, randomBytes } from "node:crypto";
 import { createId } from "@paralleldrive/cuid2";
 import { db, schema } from "@truehire/db";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 const HMAC_SECRET = () => {
   const s = process.env.AUTH_SECRET;
@@ -148,24 +148,49 @@ export async function listWorkHistory(userId: string) {
     .where(eq(schema.workHistory.userId, userId));
 }
 
-export async function latestVerificationForWorkHistory(workHistoryId: string) {
+type Verification = typeof schema.employerVerifications.$inferSelect;
+
+// Newest verification request wins; on a requestedAt tie, prefer the more
+// resolved status. Shared by the single- and batch-lookup helpers so they
+// stay behaviourally identical.
+const VERIFICATION_RANK: Record<string, number> = {
+  confirmed: 0,
+  pending: 1,
+  disputed: 2,
+  denied: 3,
+  expired: 4,
+};
+
+function isMoreRelevant(candidate: Verification, current: Verification): boolean {
+  const dc = candidate.requestedAt.getTime();
+  const dp = current.requestedAt.getTime();
+  if (dc !== dp) return dc > dp;
+  return VERIFICATION_RANK[candidate.status] < VERIFICATION_RANK[current.status];
+}
+
+/**
+ * Latest verification request per work-history row, batched into a single
+ * `WHERE IN` query instead of one query per row (removes the N+1 fan-out on
+ * the work-history list endpoint). Returns a map keyed by workHistoryId.
+ */
+export async function latestVerificationsForWorkHistories(
+  workHistoryIds: string[],
+): Promise<Map<string, Verification>> {
+  const latest = new Map<string, Verification>();
+  if (workHistoryIds.length === 0) return latest;
   const rows = await db
     .select()
     .from(schema.employerVerifications)
-    .where(eq(schema.employerVerifications.workHistoryId, workHistoryId));
-  // Return the most recent verification request for this work-history row.
-  // If two rows share a timestamp, prefer the more resolved state.
-  const rank: Record<string, number> = {
-    confirmed: 0,
-    pending: 1,
-    disputed: 2,
-    denied: 3,
-    expired: 4,
-  };
-  return rows.sort(
-    (a, b) => b.requestedAt.getTime() - a.requestedAt.getTime() ||
-      rank[a.status] - rank[b.status],
-  )[0] ?? null;
+    .where(inArray(schema.employerVerifications.workHistoryId, workHistoryIds));
+  for (const v of rows) {
+    const prev = latest.get(v.workHistoryId);
+    if (!prev || isMoreRelevant(v, prev)) latest.set(v.workHistoryId, v);
+  }
+  return latest;
+}
+
+export async function latestVerificationForWorkHistory(workHistoryId: string) {
+  return (await latestVerificationsForWorkHistories([workHistoryId])).get(workHistoryId) ?? null;
 }
 
 export type Signal2Input = {
