@@ -1,5 +1,5 @@
 import { db, schema } from "@truehire/db";
-import { and, count, desc, eq, isNull } from "drizzle-orm";
+import { and, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { computeScore, ingestGitHubUser } from "@truehire/core";
 import { computeSignal2, signal2OverallBonus } from "./verify-service";
 import { trackActivated, trackCoreAction } from "./analytics";
@@ -14,6 +14,49 @@ export async function getLatestScore(userId: string) {
     .orderBy(desc(schema.scores.computedAt))
     .limit(1);
   return rows[0] ?? null;
+}
+
+/**
+ * Batched version of `getLatestScore` — fetches the latest score row per
+ * user in a single query instead of N round-trips. Used by the /recent
+ * page which lists 30 users.
+ *
+ * Returns a Map keyed by userId; users with no score map to null.
+ */
+export async function getLatestScoresForUsers(
+  userIds: string[],
+): Promise<Map<string, typeof schema.scores.$inferSelect | null>> {
+  const result = new Map<string, typeof schema.scores.$inferSelect | null>();
+  for (const id of userIds) result.set(id, null);
+  if (userIds.length === 0) return result;
+
+  // Subquery: the max computedAt per userId (the PK is userId+computedAt,
+  // so this uniquely identifies the latest row per user).
+  const latest = db
+    .select({
+      userId: schema.scores.userId,
+      maxComputedAt: sql<Date>`max(${schema.scores.computedAt})`.as("max_computed_at"),
+    })
+    .from(schema.scores)
+    .where(inArray(schema.scores.userId, userIds))
+    .groupBy(schema.scores.userId)
+    .as("latest");
+
+  const rows = await db
+    .select({ score: schema.scores })
+    .from(schema.scores)
+    .innerJoin(
+      latest,
+      and(
+        eq(schema.scores.userId, latest.userId),
+        eq(schema.scores.computedAt, latest.maxComputedAt),
+      ),
+    );
+
+  for (const row of rows) {
+    result.set(row.score.userId, row.score);
+  }
+  return result;
 }
 
 /** Recent score snapshots, newest first. */
@@ -77,7 +120,8 @@ export async function getPublicWorkHistory(userId: string) {
   if (history.length === 0) return [];
   const verifications = await db
     .select()
-    .from(schema.employerVerifications);
+    .from(schema.employerVerifications)
+    .where(inArray(schema.employerVerifications.workHistoryId, history.map((h) => h.id)));
   const latestByWh = new Map<string, typeof verifications[number]>();
   // Use the newest verification request per work-history row.
   // If timestamps tie, prefer the more resolved status for deterministic UI.

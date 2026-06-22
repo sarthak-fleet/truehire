@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { cache } from "react";
 import { Activity, ArrowUpRight, Clock, Info, ShieldCheck } from "lucide-react";
 import { GithubIcon as Github } from "@/components/atoms/github-icon";
 import { Badge } from "@/components/atoms/badge";
@@ -28,7 +29,19 @@ type Params = { handle: string };
 
 export const revalidate = 300;
 
-async function loadProfile(handleRaw: string) {
+// Explicit edge cache directive — complements `revalidate = 300` with a
+// stale-while-revalidate window so the CDN serves a fresh-ish page even
+// under load while background revalidation happens.
+export async function headers() {
+  return {
+    "Cache-Control": "s-maxage=300, stale-while-revalidate=900",
+  };
+}
+
+// React `cache()` deduplicates calls within a single request — both
+// generateMetadata() and the page component call loadProfile() for the
+// same handle, so this turns 2 DB round-trips into 1.
+const loadProfile = cache(async (handleRaw: string) => {
   const handle = handleRaw.startsWith("@") ? handleRaw.slice(1) : handleRaw;
   const user = await getUserByUsername(handle);
   if (!user) return null;
@@ -36,7 +49,7 @@ async function loadProfile(handleRaw: string) {
   const months = await getActivityMonths(user.id);
   const work = await getPublicWorkHistory(user.id);
   return { user, score, months, work };
-}
+});
 
 export async function generateMetadata(props: {
   params: Promise<Params>;

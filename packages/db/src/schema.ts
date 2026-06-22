@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  index,
   integer,
   primaryKey,
   real,
@@ -57,7 +58,9 @@ export const workHistory = sqliteTable("work_history", {
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
-});
+}, (t) => ({
+  userIdx: index("work_history_user_idx").on(t.userId),
+}));
 
 export const employerVerifications = sqliteTable("employer_verifications", {
   id: text("id").primaryKey(),
@@ -84,7 +87,9 @@ export const employerVerifications = sqliteTable("employer_verifications", {
   respondedAt: integer("responded_at", { mode: "timestamp_ms" }),
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
   notes: text("notes"),
-});
+}, (t) => ({
+  workHistoryIdx: index("employer_verifications_work_history_idx").on(t.workHistoryId),
+}));
 
 export const accounts = sqliteTable(
   "accounts",
@@ -163,6 +168,7 @@ export const contributions = sqliteTable(
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.repoFullName] }),
+    userIdx: index("contributions_user_idx").on(t.userId),
   }),
 );
 
@@ -182,6 +188,7 @@ export const activityMonths = sqliteTable(
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.month] }),
+    userIdx: index("activity_months_user_idx").on(t.userId),
   }),
 );
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { Card, CardBody } from "@/components/atoms/card";
 import {
-  getLatestScore,
+  getLatestScoresForUsers,
   getRecentlyClaimedUsers,
 } from "@/lib/score-service";
 
@@ -16,12 +16,11 @@ export const metadata: Metadata = {
 
 export default async function RecentPage() {
   const users = await getRecentlyClaimedUsers(30);
-  const enriched = await Promise.all(
-    users.map(async (u) => ({
-      user: u,
-      score: await getLatestScore(u.id),
-    })),
-  );
+  const scoresByUser = await getLatestScoresForUsers(users.map((u) => u.id));
+  const enriched = users.map((u) => ({
+    user: u,
+    score: scoresByUser.get(u.id) ?? null,
+  }));
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
