@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/organisms/site-header";
 import { SiteFooter } from "@/components/organisms/site-footer";
+import { VitalsReporter } from "@/components/VitalsReporter";
 import { Providers } from "./providers";
 
 const inter = Inter({
@@ -50,6 +51,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
         <SaaSMakerFeedback />
+        <VitalsReporter />
         <Providers>
           <SiteHeader />
           <main className="flex-1">{children}</main>
