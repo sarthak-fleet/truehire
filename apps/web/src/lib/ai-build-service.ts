@@ -20,12 +20,20 @@ function hashesEqual(a: string, b: string): boolean {
 }
 
 export async function getAiBuildProfile(userId: string) {
-  const rows = await db
-    .select()
-    .from(schema.aiBuildProfiles)
-    .where(eq(schema.aiBuildProfiles.userId, userId))
-    .limit(1);
-  return rows[0] ?? null;
+  // Fail-soft: this runs on every public /@handle render. If the table is not
+  // yet migrated in an environment, the profile page must still load — the
+  // self-attested section just won't show.
+  try {
+    const rows = await db
+      .select()
+      .from(schema.aiBuildProfiles)
+      .where(eq(schema.aiBuildProfiles.userId, userId))
+      .limit(1);
+    return rows[0] ?? null;
+  } catch (e) {
+    console.error('getAiBuildProfile failed (table missing or DB error)', e);
+    return null;
+  }
 }
 
 /**
