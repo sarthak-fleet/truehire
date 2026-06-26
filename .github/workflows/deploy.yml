@@ -16,8 +16,35 @@ on:
     types: [closed]
 
 jobs:
+  # Apply pending Drizzle migrations to prod BEFORE the worker deploys, so the
+  # new code never serves traffic against a schema missing its tables. CI never
+  # ran migrations before, which let prod drift behind the committed schema.
+  # Soft-skips when the DB secrets are not configured, so it can't block deploys.
+  migrate-production:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with: { node-version: '20', cache: pnpm }
+      # NOT --ignore-scripts: the libsql native client (allow-listed in
+      # pnpm-workspace.yaml) must build for the migrator to connect.
+      - run: pnpm install --frozen-lockfile
+      - name: Apply pending DB migrations (skips if secrets unset)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_AUTH_TOKEN: ${{ secrets.DATABASE_AUTH_TOKEN }}
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$DATABASE_AUTH_TOKEN" ]; then
+            echo "::warning::DATABASE_URL/DATABASE_AUTH_TOKEN secrets not set — skipping auto-migration. Add them in repo Settings → Secrets and variables → Actions to keep the prod schema in sync."
+            exit 0
+          fi
+          pnpm db:migrate
+
   deploy-production:
     if: github.event_name == 'push'
+    needs: migrate-production
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6

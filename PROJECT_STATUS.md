@@ -21,7 +21,7 @@ Non-goals: user-editable bios/skills, leaderboards, pseudonymous profiles, ATS r
 | Scoring | Pure functions in `packages/core/src/scoring/score.ts` — **100% test coverage required** |
 | Testing | Vitest (core unit), Playwright (e2e) |
 | Deploy | Cloudflare Workers via `@opennextjs/cloudflare` |
-| CI | GitHub Actions — auto-deploy on push to `main` |
+| CI | GitHub Actions on push to `main` — `migrate-production` (Drizzle migrator, soft-skips until `DATABASE_URL`/`DATABASE_AUTH_TOKEN` Actions secrets are set) then auto-deploy |
 
 **Local dev:** `pnpm install && pnpm dev` → apps/web on :3000
 
