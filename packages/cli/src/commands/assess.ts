@@ -9,10 +9,16 @@ const FIDELITY_LABEL: Record<string, string> = {
   presence: dim('presence'),
 };
 
-/** `truehire assess` — scan locally, write the artifact, print a summary. */
-export async function assess(): Promise<number> {
+export type AssessOpts = { deep?: boolean; engine?: string; model?: string };
+
+/** `truehire assess [--deep]` — scan locally, write the artifact, print a summary. */
+export async function assess(opts: AssessOpts = {}): Promise<number> {
   process.stdout.write(dim('Scanning local AI tools (Claude Code, Cursor, Codex)…\n'));
-  const { artifact, results } = await buildArtifact();
+  if (opts.deep) process.stdout.write(dim('Deep grading the soft dimensions with an LLM…\n'));
+  const { artifact, results } = await buildArtifact(
+    undefined,
+    opts.deep ? { engine: opts.engine, model: opts.model } : undefined
+  );
 
   fs.mkdirSync(TRUEHIRE_DIR, { recursive: true });
   fs.writeFileSync(ARTIFACT_PATH, `${JSON.stringify(artifact, null, 2)}\n`);
@@ -47,6 +53,23 @@ export async function assess(): Promise<number> {
   process.stdout.write(
     `\n  ${dim('Data completeness')} ${Math.round(artifact.dataCompleteness * 100)}%\n`
   );
+
+  // ── deep grades (LLM-read soft dimensions) ──
+  if (opts.deep) {
+    if (artifact.deep) {
+      const where = artifact.deep.local ? green('on-device') : yellow('cloud');
+      process.stdout.write(heading(`Deep grades · ${bold(artifact.deep.model)} (${where})`));
+      for (const g of artifact.deep.grades) {
+        process.stdout.write(`\n  ${bold(g.name.padEnd(16))} ${bar(g.score)}`);
+        process.stdout.write(`\n  ${dim(g.reasoning)}\n`);
+      }
+      process.stdout.write('\n');
+    } else {
+      process.stdout.write(
+        `\n  ${yellow('Deep grading skipped')} ${dim('— no local LLM reachable. Start LM Studio or Ollama, or pass --engine codex.')}\n`
+      );
+    }
+  }
 
   // ── top projects ──
   if (artifact.projects.length > 0) {

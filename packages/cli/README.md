@@ -37,8 +37,26 @@ truehire publish    # publish to your verified TrueHire account
 truehire logout     # disconnect this machine and revoke its token
 ```
 
-`report` writes a one-page PDF to `~/.truehire/ai-build-report.pdf` and offers to send it
-to your profile (`--publish` / `--no-publish` to skip the prompt).
+`report` writes a PDF to `~/.truehire/ai-build-report.pdf` and offers to send it to your
+profile (`--publish` / `--no-publish` to skip the prompt).
+
+### Deeper grading (optional)
+
+The deterministic scorer approximates the "soft" dimensions (Signal Clarity, Decision
+Weight) with proxies like prompt length. `truehire assess --deep` instead has an **LLM
+actually read your prompts** and grade them — real qualitative judgment, with the
+reasoning shown in the report.
+
+```bash
+truehire assess --deep                      # auto-detect a LOCAL model first
+truehire assess --deep --engine codex       # cloud fallback (uses Codex CLI)
+truehire assess --deep --model <id>         # pick a specific model
+```
+
+Local-first: it auto-detects **LM Studio** (`:1234`) then **Ollama** (`:11434`) — nothing
+leaves your machine. `--engine codex` is an explicit cloud opt-in. Either way the LLM
+reasoning stays local (only the improved scores publish). If no engine is reachable it
+silently falls back to the proxy scores.
 
 `login` uses a browser-pairing flow (like `gh auth login`): it shows a short code,
 opens TrueHire in your browser, you approve while signed in via GitHub, and a

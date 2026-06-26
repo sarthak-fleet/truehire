@@ -2,7 +2,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 /** Kept in sync with package.json `version` (asserted in a test). */
-export const CLI_VERSION = '0.2.0';
+export const CLI_VERSION = '0.3.0';
 
 /** Where the generated artifact + stored login credential live locally. */
 export const TRUEHIRE_DIR = path.join(os.homedir(), '.truehire');

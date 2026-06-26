@@ -23,6 +23,10 @@ ${bold('Commands')}
 
 ${bold('Options')}
   --token <token>   Use an explicit token instead of the stored login
+  --deep            Grade the soft dimensions with an LLM (local LM Studio/Ollama
+                    first; --engine codex for the cloud fallback)
+  --engine <name>   lmstudio | ollama | codex   (default: auto-detect local)
+  --model <id>      Model id to grade with (default: first loaded local model)
 
 ${bold('Privacy')}
   Everything is computed on your machine. Only aggregate counts and ratios
@@ -48,7 +52,16 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     return logout();
   }
   if (command === 'assess') {
-    return assess();
+    const { values } = parseArgs({
+      args: argv.slice(1),
+      options: {
+        deep: { type: 'boolean' },
+        engine: { type: 'string' },
+        model: { type: 'string' },
+      },
+      allowPositionals: false,
+    });
+    return assess({ deep: values.deep, engine: values.engine, model: values.model });
   }
   if (command === 'report') {
     const rest = argv.slice(1);

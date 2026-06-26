@@ -15,9 +15,9 @@ export async function publish(token?: string): Promise<number> {
   }
 
   const artifact = await loadOrBuildArtifact();
-  // Strip the local-only per-project breakdown — project names/paths never
-  // leave the machine (preserves the "no file paths transmitted" guarantee).
-  const { projects: _localOnly, ...publishable } = artifact;
+  // Strip local-only fields — project names/paths and the LLM reasoning never
+  // leave the machine (the overridden dimension scores in `dimensions` do).
+  const { projects: _localOnly, deep: _deep, ...publishable } = artifact;
 
   let res: Response;
   try {

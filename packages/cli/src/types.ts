@@ -1,4 +1,5 @@
 import type { AiBuildResult, AiBuildSignals } from '@truehire/core';
+import type { DeepGrade } from './deep-grade';
 
 export type Tool = 'claude-code' | 'cursor' | 'codex';
 
@@ -101,4 +102,10 @@ export type Artifact = {
   toolsDetected: { tool: Tool; fidelity: Fidelity }[];
   /** Local-only per-project breakdown; removed by `publish`. */
   projects: ProjectSummary[];
+  /**
+   * Present only after `assess --deep`: LLM grades for the soft dimensions
+   * (with reasoning). LOCAL ONLY — the reasoning is stripped by `publish`; the
+   * overridden dimension scores in `dimensions` are what gets published.
+   */
+  deep?: DeepGrade;
 };

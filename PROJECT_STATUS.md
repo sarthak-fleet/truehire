@@ -67,6 +67,7 @@ Ingest (fire-and-forget on signIn) ──► Turso (users, repos, contributions,
 | Current (2026-06-20) | MVP shipped; Signal 2 manual-link beta; email delivery deferred post-MVP validation |
 | AI Build Profile (2026-06-26) | `truehire` CLI + self-attested "how you build with AI" profile (6 dimensions) from local Claude Code / Cursor / Codex logs; shown fenced on `/@handle`, contributes 0 to score |
 | AI Build Profile v0.2 (2026-06-26) | `truehire login` browser-pairing (persistent revocable tokens, `cli_tokens`/`cli_auth_sessions`, migration 0006) + per-project breakdown in `assess` (paths stay local); dashboard "Connect your CLI" + revoke. CI now auto-migrates before deploy |
+| AI Build Profile v0.3 (2026-06-27) | Richer 2-page PDF report (tier badges, key-stats panel, per-dimension evidence + weights, project table, legend) + `assess --deep`: a LOCAL LLM (LM Studio/Ollama, Codex opt-in) reads prompts and grades the soft dimensions (Signal Clarity, Decision Weight) with reasoning — overrides those proxy scores, recomputes composite; reasoning stays local (stripped on publish) |
 
 ## Products
 

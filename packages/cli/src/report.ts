@@ -59,6 +59,22 @@ function num(n: number | undefined): string {
   return String(Math.round(n));
 }
 
+/** Greedy word-wrap to lines of at most `max` characters. */
+function wrap(text: string, max: number): string[] {
+  const lines: string[] = [];
+  let cur = '';
+  for (const w of text.split(/\s+/)) {
+    if (cur && `${cur} ${w}`.length > max) {
+      lines.push(cur);
+      cur = w;
+    } else {
+      cur = cur ? `${cur} ${w}` : w;
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
 /** One deterministic sentence from the best/weakest scored dimensions. */
 function interpretation(dims: Artifact['dimensions']): string {
   const scored = dims
@@ -96,6 +112,7 @@ export async function generateReport(artifact: Artifact): Promise<Uint8Array> {
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const s = artifact.signals;
+  const deepById = new Map((artifact.deep?.grades ?? []).map((g) => [g.id as string, g] as const));
 
   // ───────────────────── PAGE 1 ─────────────────────
   const d = makeDraw(doc.addPage([W, H]));
@@ -154,21 +171,35 @@ export async function generateReport(artifact: Artifact): Promise<Uint8Array> {
   // dimensions with weight + evidence
   y -= panelH + 6;
   d.text('DIMENSIONS', M, y, 9, bold, FAINT);
+  if (artifact.deep) {
+    d.text(
+      `· Signal Clarity & Decision Weight AI-graded by ${artifact.deep.model}${artifact.deep.local ? ' (on-device)' : ' (cloud)'}`,
+      M + 72,
+      y,
+      7.5,
+      font,
+      ACCENT
+    );
+  }
   y -= 22;
   const barX = 230;
   const barW = W - M - barX - 40;
   for (const dim of artifact.dimensions) {
     const dt = tier(dim.score);
+    const g = deepById.get(dim.id);
     d.text(dim.name, M, y, 11, bold, INK);
     d.text(`${Math.round(dim.weight * 100)}% weight`, M, y - 11, 8, font, FAINT);
     d.rect(barX, y - 1, barW, 6, TRACK);
     if (dim.score != null)
       d.rect(barX, y - 1, (barW * Math.max(0, Math.min(100, dim.score))) / 100, 6, dt.color);
     d.right(dim.score == null ? '—' : String(dim.score), W - M, y - 1, 12, bold, dt.color);
-    const ev = dim.evidence.length
-      ? dim.evidence.slice(0, 4).join('   ·   ')
-      : 'not enough data for this dimension';
-    d.text(ev.length > 94 ? `${ev.slice(0, 94)}…` : ev, barX, y - 12, 7.5, font, FAINT);
+    // deep-graded dims show the LLM's reasoning; others show contributing signals
+    const ev = g
+      ? g.reasoning
+      : dim.evidence.length
+        ? dim.evidence.slice(0, 4).join('   ·   ')
+        : 'not enough data for this dimension';
+    d.text(ev.length > 96 ? `${ev.slice(0, 96)}…` : ev, barX, y - 12, 7.5, font, g ? MUTED : FAINT);
     y -= 30;
   }
   drawFooter(d, font, artifact.cliVersion, 1);
@@ -190,12 +221,37 @@ export async function generateReport(artifact: Artifact): Promise<Uint8Array> {
     d2.right('EDITS', W - M - 88, y2, 7.5, bold, FAINT);
     d2.right('SESSIONS', W - M, y2, 7.5, bold, FAINT);
     y2 -= 15;
-    for (const p of artifact.projects.slice(0, 16)) {
+    for (const p of artifact.projects.slice(0, artifact.deep ? 11 : 16)) {
       d2.text(p.name.slice(0, 30), M, y2, 10, font, INK);
       d2.text(p.tools.map((tt) => TOOL_LABEL[tt] ?? tt).join(', '), 250, y2, 8.5, font, FAINT);
       d2.right(num(p.codeBlocks), W - M - 88, y2, 9, font, MUTED);
       d2.right(String(p.sessions), W - M, y2, 9, font, MUTED);
       y2 -= 16;
+    }
+  }
+
+  if (artifact.deep) {
+    y2 -= 20;
+    d2.text(
+      `DEEP GRADING · ${artifact.deep.model}${artifact.deep.local ? ' (on-device)' : ' (cloud)'}`,
+      M,
+      y2,
+      9,
+      bold,
+      FAINT
+    );
+    y2 -= 8;
+    d2.rule(y2);
+    y2 -= 16;
+    for (const g of artifact.deep.grades) {
+      d2.text(g.name, M, y2, 10, bold, INK);
+      d2.right(String(g.score), W - M, y2, 9, font, FAINT);
+      y2 -= 13;
+      for (const line of wrap(g.reasoning, 108)) {
+        d2.text(line, M, y2, 8.5, font, MUTED);
+        y2 -= 11;
+      }
+      y2 -= 8;
     }
   }
 
