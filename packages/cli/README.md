@@ -23,7 +23,7 @@ npm i -g truehire     # or run ad-hoc: npx truehire login
 ```
 
 **Standalone binary** (no Node required) — download for your platform from the
-[latest release](https://github.com/sarthakagrawal927/truehire/releases) (`truehire-darwin-arm64`,
+[latest release](https://github.com/sarthak-fleet/truehire/releases) (`truehire-darwin-arm64`,
 `truehire-linux-x64`, `truehire-windows-x64.exe`, …), `chmod +x`, and run. Built with
 `bun --compile`; the Cursor adapter uses Bun's built-in SQLite, so there's no native dependency.
 
@@ -76,9 +76,16 @@ Each tool is optional — a missing one simply lowers `dataCompleteness`, never 
 
 ## Privacy
 
-Everything is computed locally. The tool produces **only aggregate counts and
-ratios** (session counts, tool-call counts, line ratios, prompt-length averages) —
-it never reads, stores, or transmits your **prompt text, source code, or file
-paths**. The `assess` artifact is cached at `~/.truehire/ai-build-profile.json`;
-`publish` sends only that summary. Set `NO_COLOR=1` to disable ANSI colors and
-`TRUEHIRE_API_URL` to point at a local dev server.
+Everything is computed on your machine. What **leaves** it is strictly bounded:
+
+- **`publish` transmits only aggregate scores, counts and ratios** — never your
+  prompt text, source code, or file paths. The per-project breakdown (which
+  includes project names/paths) and any `--deep` reasoning are stripped before upload.
+- **`assess --deep`** reads your prompt *text* to grade it — but on the local path
+  (LM Studio / Ollama) that never leaves the machine. Only `--engine codex` sends
+  sampled prompts off-device, and it's an explicit opt-in.
+- The `assess` artifact (incl. local-only project paths) is cached at
+  `~/.truehire/ai-build-profile.json`; the report at `~/.truehire/ai-build-report.pdf`.
+
+`NO_COLOR=1` disables ANSI colors; `TRUEHIRE_API_URL` points at a local dev server;
+`TRUEHIRE_NO_BROWSER=1` skips the login browser auto-open.
