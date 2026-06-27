@@ -1,6 +1,6 @@
 {
   "name": "truehire",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Compute your local AI-build profile (Claude Code / Cursor / Codex) and publish it to your verified TrueHire profile.",
   "type": "module",
   "bin": {
