@@ -3,12 +3,12 @@
 
 export const dynamic = 'force-static';
 
-const BODY = `Contact: https://github.com/sarthakagrawal927/truehire/security/advisories/new
+const BODY = `Contact: https://github.com/sarthak-fleet/truehire/security/advisories/new
 Contact: mailto:sarthakagrawal927@gmail.com
 Preferred-Languages: en
 Expires: 2027-05-15T00:00:00Z
 Canonical: https://truehire.workers.dev/.well-known/security.txt
-Acknowledgments: https://github.com/sarthakagrawal927/truehire/security
+Acknowledgments: https://github.com/sarthak-fleet/truehire/security
 `;
 
 export function GET() {
