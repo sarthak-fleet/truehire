@@ -1,6 +1,6 @@
 # truehire — PROJECT_STATUS
 
-Last updated: 2026-06-26
+Last updated: 2026-06-28
 
 ## Why/What
 
