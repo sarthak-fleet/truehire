@@ -19,7 +19,8 @@
     "db:generate": "pnpm --filter @truehire/db generate",
     "db:migrate": "pnpm --filter @truehire/db migrate",
     "db:studio": "pnpm --filter @truehire/db studio",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "deploy": "node scripts/manual-deploy.mjs deploy.yml ci.yml"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.0",

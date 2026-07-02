@@ -1,21 +1,6 @@
 name: Deploy to Cloudflare Workers
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/deploy.yml'
-      - 'apps/web/**'
-      - 'packages/**'
-  pull_request:
-    branches: [main]
-    paths:
-      - '.github/workflows/deploy.yml'
-      - 'apps/web/**'
-      - 'packages/**'
-  pull_request_target:
-    types: [closed]
-
 jobs:
   # Apply pending Drizzle migrations to prod BEFORE the worker deploys, so the
   # new code never serves traffic against a schema missing its tables. CI never
