@@ -1,6 +1,6 @@
 # truehire — PROJECT_STATUS
 
-Last updated: 2026-06-28
+Last updated: 2026-07-02
 
 ## Why/What
 
@@ -59,6 +59,7 @@ Ingest (fire-and-forget on signIn) ──► Turso (users, repos, contributions,
 
 | Phase | Milestone |
 |-------|-----------|
+| 2026-07-02 | Added global try/catch error handler to OpenNext worker (`apps/web/worker.mjs`) — logs method/path/message/stack, returns 500 JSON on uncaught errors. |
 | Signal 1 MVP | GitHub OAuth, full ingest pipeline, pure 5-axis composite scoring, public profiles at `/@handle`, dashboard with SSE progress |
 | Methodology & trust | `/methodology` with live constants from core; pre-commit secret scan |
 | Recruiter proof (MVP+) | Score proof, recruiter takeaway card, evidence labels, RiskFlags, role-fit, JD demo, resume claim audit prototype, hiring domain (roles/pipelines/shortlist) |
