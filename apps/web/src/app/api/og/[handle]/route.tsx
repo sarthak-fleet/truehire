@@ -2,7 +2,6 @@ import { ImageResponse } from 'next/og';
 import { getLatestScore, getUserByUsername } from '@/lib/score-service';
 
 export const runtime = 'nodejs'; // Drizzle/libsql — not edge
-export const contentType = 'image/png';
 
 export async function GET(_req: Request, ctx: { params: Promise<{ handle: string }> }) {
   const { handle } = await ctx.params;

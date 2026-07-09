@@ -31,15 +31,6 @@ type Params = { handle: string };
 
 export const revalidate = 300;
 
-// Explicit edge cache directive — complements `revalidate = 300` with a
-// stale-while-revalidate window so the CDN serves a fresh-ish page even
-// under load while background revalidation happens.
-export async function headers() {
-  return {
-    'Cache-Control': 's-maxage=300, stale-while-revalidate=900',
-  };
-}
-
 // React `cache()` deduplicates calls within a single request — both
 // generateMetadata() and the page component call loadProfile() for the
 // same handle, so this turns 2 DB round-trips into 1.

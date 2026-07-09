@@ -1,4 +1,4 @@
-import { createClient, type Client } from '@libsql/client';
+import { createClient, type Client } from '@libsql/client/web';
 import { drizzle } from 'drizzle-orm/libsql';
 import * as schema from './schema';
 
@@ -8,7 +8,7 @@ declare global {
 }
 
 function makeClient(): Client {
-  const url = process.env.DATABASE_URL ?? 'file:./local.db';
+  const url = process.env.DATABASE_URL ?? 'http://127.0.0.1:8080';
   const authToken = process.env.DATABASE_AUTH_TOKEN;
   return createClient({ url, authToken });
 }

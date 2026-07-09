@@ -4,7 +4,6 @@ import { ImageResponse } from 'next/og';
 // `src/app/api/og/[handle]/route.tsx`. Uses the Node runtime to match that
 // route (the project runs on the Cloudflare Node-compatible adapter).
 export const runtime = 'nodejs';
-export const contentType = 'image/png';
 export const alt = 'TrueHire — the verified-candidate layer';
 export const size = { width: 1200, height: 630 };
 
