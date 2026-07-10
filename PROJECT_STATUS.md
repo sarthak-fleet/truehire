@@ -1,5 +1,7 @@
 # truehire — PROJECT_STATUS
 
+Last updated: 2026-07-10
+
 Last updated: 2026-07-02
 
 ## Why/What
@@ -155,7 +157,7 @@ Ingest (fire-and-forget on signIn) ──► Turso (users, repos, contributions,
 1. **MVP score validation** — test composite with real candidate profiles; collect recruiter feedback on trust and usefulness.
 2. **Weight calibration discipline** — adjust scoring weights only with corresponding core test updates and `/methodology` sync.
 3. **Resume claim audit graduation decision** — move from fixture prototype to live recruiter workflow (pasted resume + selected handles) if MVP trust feedback supports it.
-4. **Next extension selection** — choose among `plans/0002` (commit storyteller), `0003` (repo-history analyser), `0004` (no-signal onboarding) once MVP trust or growth feedback is clear.
+4. ~~**Next extension selection**~~ — **Paused 2026-07-10:** do not start `plans/0002`, `0003`, or `0004` until MVP trust or growth feedback is collected.
 5. **Signal 2 completion** — wire transactional email (Resend or Cloudflare Email) for verification links after MVP validation, not before.
 6. **Signal 2 ops** — pending-request expiry jobs, nudge UI, production email secrets via `wrangler secret put` only.
 7. **Publish the `truehire` CLI to npm** — packaging is release-ready (`publishConfig.access: public`, `files`, `prepublishOnly`); the actual `npm publish` is run by the owner (needs npm auth). Verify the `better-sqlite3` prebuild installs cleanly for `npm i -g truehire`.
@@ -170,6 +172,7 @@ Ingest (fire-and-forget on signIn) ──► Turso (users, repos, contributions,
 - Leaderboards, generic sourcing, ATS replacement, non-technical-role support.
 - Pseudonymous handle-only profiles (real-name-linked GitHub enforced for now).
 - Paid tiers (manual refresh, private mode, verified PDF export, recruiter search) until MVP validation completes.
+- Product expansion is paused after MVP; retain the repo as a proof/credibility surface under RolePatch and reopen only for measured recruiter validation.
 
 ### Blocked / Known gaps
 - Signal 2 is **manual-link beta only** — candidate must copy-forward verification URL; no email transport wired.
