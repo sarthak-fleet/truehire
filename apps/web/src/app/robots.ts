@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const siteUrl = 'https://truehire.workers.dev';
+const siteUrl = 'https://truehire.rolepatch.com';
 
 export default function robots(): MetadataRoute.Robots {
   return {

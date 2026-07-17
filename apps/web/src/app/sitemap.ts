@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 export const dynamic = 'force-static';
 
-const siteUrl = 'https://truehire.workers.dev';
+const siteUrl = 'https://truehire.rolepatch.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

@@ -131,7 +131,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ handle: string
             </>
           )}
         </div>
-        <div style={{ display: 'flex' }}>truehire.dev/{clean}</div>
+        <div style={{ display: 'flex' }}>truehire.rolepatch.com/{clean}</div>
       </div>
     </div>,
     { width: 1200, height: 630 }

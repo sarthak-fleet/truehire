@@ -4,7 +4,7 @@ import { startCliAuth } from '@/lib/ai-build-service';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://truehire.sarthakagrawal927.workers.dev';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://truehire.rolepatch.com';
 
 /** Begin device pairing (no auth). Returns the device + user codes. */
 export async function POST(req: Request) {

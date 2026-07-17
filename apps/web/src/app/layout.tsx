@@ -25,7 +25,7 @@ const SITE_DESCRIPTION =
 export const metadata: Metadata = {
   title: 'TrueHire — the verified-candidate layer',
   description: SITE_DESCRIPTION,
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://truehire.rolepatch.com'),
   openGraph: {
     type: 'website',
     siteName: 'TrueHire',

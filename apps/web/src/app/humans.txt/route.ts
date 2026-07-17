@@ -3,7 +3,7 @@ export const dynamic = 'force-static';
 const BODY = `/* TEAM */
 Maintainer: Sarthak Agrawal
 GitHub: sarthakagrawal927
-Site: https://truehire.workers.dev
+Site: https://truehire.rolepatch.com
 
 /* THANKS */
 GitHub — for the public API that makes the score possible.

@@ -97,7 +97,7 @@ export default function OgImage() {
           <span>Reputation bonds</span>
           <span>Paid audition</span>
         </div>
-        <div style={{ display: 'flex' }}>truehire.dev</div>
+        <div style={{ display: 'flex' }}>truehire.rolepatch.com</div>
       </div>
     </div>,
     size

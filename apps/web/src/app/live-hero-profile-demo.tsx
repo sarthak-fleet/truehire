@@ -104,7 +104,7 @@ export async function LiveHeroProfileDemo() {
           </div>
           <div className="num flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-0.5 text-[11px] text-[var(--muted)]">
             <span className="h-1 w-1 rounded-full bg-[var(--verified)]" />
-            truehire.dev/{user.githubUsername}
+            truehire.rolepatch.com/{user.githubUsername}
           </div>
           <div className="w-10" />
         </div>
