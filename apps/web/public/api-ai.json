@@ -3,8 +3,9 @@
   "version": "1",
   "url": "https://truehire.rolepatch.com",
   "llms": "https://truehire.rolepatch.com/llms.txt",
-  "llmsFull": null,
+  "llmsFull": "https://truehire.rolepatch.com/llms-full.txt",
   "sitemap": "https://truehire.rolepatch.com/sitemap.xml",
+  "robots": "https://truehire.rolepatch.com/robots.txt",
   "markdown": {
     "suffix": ".md",
     "negotiation": true
