@@ -23,6 +23,15 @@ const SITE_DESCRIPTION =
   'Costly, verifiable signals instead of AI-tailored resumes. Your GitHub becomes a credential recruiters can trust.';
 
 export const metadata: Metadata = {
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+
   title: 'TrueHire — the verified-candidate layer',
   description: SITE_DESCRIPTION,
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://truehire.rolepatch.com'),
