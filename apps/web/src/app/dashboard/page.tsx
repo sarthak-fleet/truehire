@@ -180,7 +180,9 @@ export default async function DashboardPage() {
                   <div className="text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]">
                     Your profile URL
                   </div>
-                  <div className="num mt-1 truncate font-medium">truehire.rolepatch.com{profileUrl}</div>
+                  <div className="num mt-1 truncate font-medium">
+                    truehire.rolepatch.com{profileUrl}
+                  </div>
                 </div>
                 <Link href={profileUrl}>
                   <Button
