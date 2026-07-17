@@ -35,7 +35,7 @@
   // Non-secret defaults. Secrets (AUTH_SECRET, AUTH_GITHUB_SECRET,
   // DATABASE_AUTH_TOKEN, GITHUB_API_TOKEN) are provisioned via `wrangler secret put`.
   "vars": {
-    "NEXT_PUBLIC_APP_URL": "https://truehire.sarthakagrawal927.workers.dev",
-    "AUTH_URL": "https://truehire.sarthakagrawal927.workers.dev"
+    "NEXT_PUBLIC_APP_URL": "https://truehire.rolepatch.com",
+    "AUTH_URL": "https://truehire.rolepatch.com"
   }
 }
